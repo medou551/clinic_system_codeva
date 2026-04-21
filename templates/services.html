@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}الخدمات — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.page-header { background:linear-gradient(135deg,#0d5aa7,#1a6fc4); color:#fff; padding:55px 0 40px; }
+.svc-icon { width:70px; height:70px; border-radius:16px; background:linear-gradient(135deg,#e8f0fe,#c5d8f8); display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:#1a6fc4; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h2 class="fw-bold mb-1"><i class="fas fa-briefcase-medical me-2"></i>خدماتنا الطبية</h2>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accueil' %}" class="text-white-50">الرئيسية</a></li>
+        <li class="breadcrumb-item active text-white">الخدمات</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-4">
+    {% for s in services %}
+    <div class="col-md-4">
+      <div class="card h-100 p-4">
+        <div class="svc-icon mb-3"><i class="fas {{ s.icone }}"></i></div>
+        <h5 class="fw-bold">{{ s.nom }}</h5>
+        <p class="text-muted">{{ s.description }}</p>
+        <div class="mt-auto d-flex justify-content-between align-items-center">
+          <span class="fw-bold text-primary fs-5">{{ s.prix }} MRU</span>
+          <a href="{% url 'prendre_rdv' %}" class="btn btn-sm btn-outline-primary rounded-pill">احجز الآن</a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="fas fa-briefcase-medical fa-3x text-muted mb-3"></i>
+      <p class="text-muted">لا توجد خدمات مضافة بعد</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

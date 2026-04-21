@@ -1,0 +1,114 @@
+{% extends "reception/base_reception.html" %}
+{% block title %}فواتير التحاليل{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-file-invoice me-2"></i>فواتير التحاليل</h5></div>
+  <a href="{% url 'reception_demande_analyse_nouveau' %}" class="btn btn-primary btn-sm px-3">
+    <i class="fas fa-plus me-1"></i>طلب تحليل جديد
+  </a>
+</div>
+
+<!-- Filtre -->
+<div class="card mb-3">
+  <div class="card-body py-2 px-3">
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <a href="{% url 'reception_factures' %}" class="btn btn-sm {% if not filtre %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill">الكل</a>
+      <a href="?statut=non_payee" class="btn btn-sm {% if filtre == 'non_payee' %}btn-warning{% else %}btn-outline-warning{% endif %} rounded-pill">
+        <i class="fas fa-hourglass me-1"></i>غير مدفوعة
+      </a>
+      <a href="?statut=payee" class="btn btn-sm {% if filtre == 'payee' %}btn-success{% else %}btn-outline-success{% endif %} rounded-pill">
+        <i class="fas fa-check me-1"></i>مدفوعة
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Info flux -->
+<div class="card mb-3" style="background:#eff6ff;border:1.5px solid #bfdbfe">
+  <div class="card-body py-2 px-3" style="font-size:.83rem;color:#1e40af">
+    <i class="fas fa-info-circle me-1"></i>
+    <strong>الدفع في الاستقبال</strong> يجعل الطلب مرئياً فوراً للمختبر وللطبيب المعني.
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between">
+    <span>الفواتير</span>
+    <span style="font-size:.78rem;color:#888">{{ factures|length }} فاتورة</span>
+  </div>
+  <div class="card-body p-0">
+    {% if factures %}
+    <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>المريض</th>
+          <th>التحليل</th>
+          <th>الطبيب المعني</th>
+          <th>المبلغ</th>
+          <th>الحالة</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in factures %}
+        <tr {% if f.statut == 'non_payee' %}style="background:#fffbeb"{% endif %}>
+          <td class="text-muted small">{{ f.id }}</td>
+          <td>
+            <strong>{{ f.patient.utilisateur.first_name }} {{ f.patient.utilisateur.last_name }}</strong>
+            {% if f.patient.telephone %}<br><small class="text-muted">{{ f.patient.telephone }}</small>{% endif %}
+          </td>
+          <td>
+            <span class="fw-bold">{{ f.demande.analyse.nom }}</span>
+            <br><small class="text-muted">{{ f.cree_le|date:"Y/m/d H:i" }}</small>
+          </td>
+          <td>
+            <small>{{ f.demande.medecin|default:"—" }}</small>
+          </td>
+          <td class="fw-bold text-primary">{{ f.montant }} MRU</td>
+          <td>
+            {% if f.statut == 'payee' %}
+              <span class="badge bg-success rounded-pill">مدفوعة</span>
+              <br><small class="text-muted" style="font-size:.72rem">حالة التحليل: {{ f.demande.get_statut_display }}</small>
+            {% else %}
+              <span class="badge bg-warning text-dark rounded-pill">غير مدفوعة</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="d-flex flex-column gap-1">
+              {% if f.statut == 'non_payee' %}
+              <form method="POST" action="{% url 'reception_payer_facture' f.id %}">
+                {% csrf_token %}
+                <select name="mode" class="form-select form-select-sm mb-1" style="width:110px">
+                  <option value="cash">نقداً</option>
+                  <option value="bankily">بنكيلي</option>
+                  <option value="sedad">سداد</option>
+                  <option value="autre">أخرى</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-success w-100">
+                  <i class="fas fa-money-bill me-1"></i>دفع {{ f.montant }} MRU
+                </button>
+              </form>
+              {% else %}
+              <span class="text-success small fw-bold"><i class="fas fa-check-circle me-1"></i>تم الدفع</span>
+              {% endif %}
+              <a href="{% url 'facture_analyse_print' f.id %}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                <i class="fas fa-print me-1"></i>طباعة
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="fas fa-file-invoice fa-2x d-block mb-2" style="color:#d1d5db"></i>
+      لا توجد فواتير
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

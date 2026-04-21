@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}سجل المراقبة — لوحة الإدارة{% endblock %}
+{% block css %}
+<style>
+.page-header{background:linear-gradient(135deg,#1e293b,#374151);color:#fff;padding:32px 0;margin-bottom:30px}
+.page-header h1{font-size:1.6rem;font-weight:700}
+.filters-bar{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:22px}
+.filters-bar form{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.filters-bar select,.filters-bar input{border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.88rem;color:#333}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:22px}
+.stat-c{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.stat-c .num{font-size:1.8rem;font-weight:800;color:#1a6fc4}
+.stat-c .lbl{font-size:.78rem;color:#6c757d;margin-top:2px}
+.log-table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow:hidden}
+.log-table th{background:#f8fafc;padding:12px 14px;text-align:right;font-size:.82rem;font-weight:700;color:#6c757d;border-bottom:2px solid #e2e8f0}
+.log-table td{padding:11px 14px;font-size:.85rem;border-bottom:1px solid #f0f4ff;vertical-align:middle}
+.log-table tr:last-child td{border-bottom:none}
+.log-table tr:hover td{background:#f8fafc}
+.badge-action{border-radius:6px;padding:3px 10px;font-size:.75rem;font-weight:700}
+.ba-creation{background:#e8f5e9;color:#2e7d32}
+.ba-modification{background:#e8f4fd;color:#1565c0}
+.ba-connexion{background:#f3e8ff;color:#6b21a8}
+.ba-deconnexion{background:#f1f5f9;color:#475569}
+.ba-annulation{background:#fef0f0;color:#b91c1c}
+.ba-paiement{background:#fffbeb;color:#92400e}
+.ba-transfert{background:#ecfdf5;color:#065f46}
+.ba-suppression{background:#fef2f2;color:#dc2626}
+.user-chip{display:inline-flex;align-items:center;gap:6px;background:#f0f7ff;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:600;color:#1a6fc4}
+.empty{text-align:center;padding:40px;color:#adb5bd}
+.modele-chip{background:#f1f5f9;color:#475569;border-radius:6px;padding:2px 8px;font-size:.78rem}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1><i class="fas fa-shield-alt me-2"></i>سجل المراقبة والتدقيق</h1>
+    <p style="opacity:.85;margin:0">سجل شامل بجميع العمليات الحساسة في النظام</p>
+  </div>
+</div>
+<div class="container-fluid" style="max-width:1200px">
+
+  <div class="stats-row">
+    <div class="stat-c"><div class="num">{{ total }}</div><div class="lbl">إجمالي السجلات</div></div>
+    <div class="stat-c"><div class="num" style="color:#2e7d32">{{ logs|length }}</div><div class="lbl">نتائج البحث</div></div>
+  </div>
+
+  <div class="filters-bar">
+    <form method="GET">
+      <select name="action" onchange="this.form.submit()">
+        <option value="">-- كل الإجراءات --</option>
+        {% for a in actions_dispo %}
+        <option value="{{ a }}" {% if filtre_action == a %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+      <select name="modele" onchange="this.form.submit()">
+        <option value="">-- كل الجداول --</option>
+        {% for m in modeles_dispo %}
+        <option value="{{ m }}" {% if filtre_modele == m %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+      <input type="text" name="user" placeholder="اسم المستخدم..." value="{{ filtre_user }}" style="min-width:160px">
+      <button type="submit" class="btn btn-primary btn-sm" style="border-radius:8px">بحث</button>
+      {% if filtre_action or filtre_modele or filtre_user %}
+      <a href="{% url 'journal_audit' %}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px">إعادة تعيين</a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if not logs %}
+  <div class="empty"><i class="fas fa-scroll fa-3x mb-3"></i><p>لا توجد سجلات</p></div>
+  {% else %}
+  <div style="overflow-x:auto">
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>التاريخ والوقت</th>
+          <th>المستخدم</th>
+          <th>الإجراء</th>
+          <th>الجدول</th>
+          <th>التفاصيل</th>
+          <th>IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="white-space:nowrap;color:#6c757d;font-size:.8rem">
+            {{ log.cree_le|date:"d/m/Y" }}<br>
+            <strong>{{ log.cree_le|time:"H:i:s" }}</strong>
+          </td>
+          <td>
+            {% if log.utilisateur %}
+            <span class="user-chip"><i class="fas fa-user" style="font-size:.7rem"></i>{{ log.utilisateur.username }}</span>
+            {% else %}
+            <span style="color:#adb5bd;font-size:.8rem">غير معروف</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge-action ba-{{ log.action }}">{{ log.get_action_display }}</span>
+          </td>
+          <td>
+            <span class="modele-chip">{{ log.modele }}</span>
+            {% if log.objet_id %}
+            <span style="color:#adb5bd;font-size:.75rem">#{{ log.objet_id }}</span>
+            {% endif %}
+          </td>
+          <td style="max-width:300px;font-size:.82rem;color:#374151">{{ log.description|truncatechars:80 }}</td>
+          <td style="font-size:.78rem;color:#adb5bd;font-family:monospace">{{ log.ip_address|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

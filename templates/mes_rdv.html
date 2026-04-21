@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}مواعيدي — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.page-header{background:linear-gradient(135deg,#0d5aa7,#1a6fc4);color:#fff;padding:50px 0 35px}
+.rdv-card{background:#fff;border-radius:16px;box-shadow:0 3px 16px rgba(26,111,196,.09);overflow:hidden;margin-bottom:12px;transition:all .25s}
+.rdv-card:hover{box-shadow:0 8px 28px rgba(26,111,196,.15);transform:translateY(-2px)}
+.rdv-card .date-strip{background:linear-gradient(135deg,#1a6fc4,#17c3b2);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between}
+.rdv-card .date-strip .big-date{font-size:1rem;font-weight:800}
+.rdv-card .date-strip .time{font-size:.82rem;opacity:.85}
+.rdv-card .body{padding:14px 18px;display:flex;align-items:center;gap:14px}
+.rdv-card .doc-av{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#e8f0fe,#c5d8f8);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#1a6fc4;flex-shrink:0}
+.rdv-card .doc-name{font-size:.95rem;font-weight:800;color:#1a2a4a}
+.rdv-card .doc-spec{font-size:.78rem;color:#888;margin-top:2px}
+.rdv-card .motif{font-size:.78rem;color:#666;background:#f8faff;border-radius:8px;padding:6px 10px;margin-top:8px;border-right:2px solid #1a6fc4}
+.bx-attente {background:#fff3cd;color:#856404;padding:3px 10px;border-radius:20px;font-size:.73rem;font-weight:700;display:inline-block}
+.bx-confirme{background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:.73rem;font-weight:700;display:inline-block}
+.bx-annule  {background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:20px;font-size:.73rem;font-weight:700;display:inline-block}
+.bx-termine {background:#e5e7eb;color:#374151;padding:3px 10px;border-radius:20px;font-size:.73rem;font-weight:700;display:inline-block}
+.filter-btn{border-radius:20px;font-size:.82rem;padding:5px 16px;font-weight:600}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="fas fa-calendar-check me-2"></i>مواعيدي</h2>
+      <p class="mb-0 opacity-75">{{ rdvs.count }} موعد مسجل</p>
+    </div>
+    <a href="{% url 'prendre_rdv' %}" class="btn btn-light fw-bold rounded-pill px-4" style="color:#1a6fc4">
+      <i class="fas fa-plus me-1"></i>موعد جديد
+    </a>
+  </div>
+</div>
+
+<div class="container py-4">
+  <!-- فلاتر -->
+  <div class="mb-4 d-flex gap-2 flex-wrap">
+    <a href="{% url 'mes_rdv' %}" class="btn filter-btn {% if not filtre %}btn-primary{% else %}btn-outline-secondary{% endif %}">الكل</a>
+    <a href="?statut=attente"  class="btn filter-btn {% if filtre == 'attente'  %}btn-warning text-dark{% else %}btn-outline-warning{% endif %}">في الانتظار</a>
+    <a href="?statut=confirme" class="btn filter-btn {% if filtre == 'confirme' %}btn-success{% else %}btn-outline-success{% endif %}">مؤكد</a>
+    <a href="?statut=termine"  class="btn filter-btn {% if filtre == 'termine'  %}btn-secondary{% else %}btn-outline-secondary{% endif %}">مكتمل</a>
+    <a href="?statut=annule"   class="btn filter-btn {% if filtre == 'annule'   %}btn-danger{% else %}btn-outline-danger{% endif %}">ملغي</a>
+  </div>
+
+  {% if rdvs %}
+  {% for r in rdvs %}
+  <div class="rdv-card">
+    <div class="date-strip">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-calendar me-1"></i>
+        <span class="big-date">{{ r.date }}</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span class="time"><i class="fas fa-clock me-1"></i>{{ r.heure }}</span>
+        <span class="bx-{{ r.statut }}">{{ r.get_statut_display }}</span>
+      </div>
+    </div>
+    <div class="body">
+      <div class="doc-av"><i class="fas fa-user-md"></i></div>
+      <div class="flex-grow-1">
+        <div class="doc-name">{{ r.medecin }}</div>
+        <div class="doc-spec">{% if r.medecin.specialite %}<i class="fas fa-stethoscope me-1"></i>{{ r.medecin.specialite }}{% endif %}{% if r.medecin.telephone %} &nbsp;•&nbsp; <i class="fas fa-phone me-1"></i>{{ r.medecin.telephone }}{% endif %}</div>
+        {% if r.motif %}<div class="motif"><i class="fas fa-comment-medical me-1"></i>{{ r.motif }}</div>{% endif %}
+      </div>
+      {% if r.statut == 'attente' or r.statut == 'confirme' %}
+      <a href="{% url 'annuler_rdv' r.pk %}"
+         onclick="return confirm('هل أنت متأكد من إلغاء هذا الموعد؟')"
+         class="btn btn-sm btn-outline-danger rounded-pill flex-shrink-0" style="font-size:.75rem">
+        <i class="fas fa-times me-1"></i>إلغاء
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="text-center py-5">
+    <i class="fas fa-calendar-times fa-3x mb-3" style="color:#d1d5db"></i>
+    <h5 class="text-muted">لا توجد مواعيد</h5>
+    <a href="{% url 'prendre_rdv' %}" class="btn btn-primary rounded-pill px-4 mt-2">
+      <i class="fas fa-calendar-plus me-2"></i>احجز أول موعد
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

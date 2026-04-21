@@ -1,0 +1,92 @@
+{% extends 'reception/base_reception.html' %}
+{% block title %}إدارة المواعيد{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-calendar-check me-2"></i>إدارة المواعيد</h5></div>
+  <a href="{% url 'reception_rdv_nouveau' %}" class="btn btn-primary btn-sm px-3"><i class="fas fa-plus me-1"></i>موعد جديد</a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2 px-3">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label" style="font-size:.78rem;font-weight:700;color:#555;margin-bottom:3px">الحالة</label>
+        <select name="statut" class="form-select form-select-sm">
+          <option value="">كل الحالات</option>
+          <option value="attente"  {% if filtre_statut ==  "attente"  %}selected{% endif %}>في الانتظار</option>
+          <option value="confirme" {% if filtre_statut == "confirme" %}selected{% endif %}>مؤكد</option>
+          <option value="checked_in" {% if filtre_statut == "checked_in" %}selected{% endif %}>حضر</option>
+          <option value="annule"   {% if filtre_statut == "annule"   %}selected{% endif %}>ملغي</option>
+          <option value="termine"  {% if filtre_statut == "termine"  %}selected{% endif %}>مكتمل</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" style="font-size:.78rem;font-weight:700;color:#555;margin-bottom:3px">التاريخ</label>
+        <input type="date" name="date" class="form-control form-control-sm" value="{{ filtre_date }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" style="font-size:.78rem;font-weight:700;color:#555;margin-bottom:3px">الطبيب</label>
+        <select name="medecin" class="form-select form-select-sm">
+          <option value="">كل الأطباء</option>
+          {% for m in medecins %}
+          <option value="{{ m.id }}" {% if filtre_med ==  m.id|stringformat:"s" %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">بحث</button>
+        <a href="{% url 'reception_rdv' %}" class="btn btn-outline-secondary btn-sm">مسح</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between">
+    <span>النتائج</span><span style="font-size:.78rem;color:#888">{{ rdvs.count }} موعد</span>
+  </div>
+  <div class="card-body p-0">
+    {% if rdvs %}
+    <table class="table mb-0">
+      <thead><tr><th>المريض</th><th>الطبيب</th><th>التاريخ</th><th>الوقت</th><th>السبب</th><th>الحالة</th><th>الاستشارة</th><th>تغيير الحالة</th></tr></thead>
+      <tbody>
+        {% for rdv in rdvs %}
+        <tr>
+          <td><strong>{{ rdv.patient.get_full_name|default:rdv.patient.username }}</strong></td>
+          <td>{{ rdv.medecin }}<br><small class="text-muted">{{ rdv.medecin.specialite }}</small></td>
+          <td>{{ rdv.date }}</td>
+          <td><strong style="color:#1a6fc4">{{ rdv.heure|time:"H:i" }}</strong></td>
+          <td class="text-muted" style="font-size:.78rem">{{ rdv.motif|truncatechars:35|default:"—" }}</td>
+          <td><span class="st-badge st-{{ rdv.statut }}">{{ rdv.get_statut_display }}</span></td>
+          <td>
+            {% if rdv.facture_consultation %}
+              <a class="btn btn-sm btn-outline-primary mb-1" href="{% url 'facture_consultation_print' rdv.facture_consultation.id %}">طباعة</a>
+              {% if rdv.facture_consultation.statut != 'payee' %}
+              <form method="post" action="{% url 'payer_consultation' rdv.facture_consultation.id %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-success">دفع</button></form>
+              {% else %}<span class="st-badge st-confirme">مدفوعة</span>{% endif %}
+            {% else %}
+              <a class="btn btn-sm btn-primary" href="{% url 'creer_facture_consultation' rdv.id %}">إنشاء الفاتورة</a>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="{% url 'reception_rdv_statut' rdv.pk %}">
+              {% csrf_token %}
+              <select name="statut" class="form-select form-select-sm" style="width:130px" onchange="this.form.submit()">
+                {% for val,lbl in rdv.STATUTS %}
+                <option value="{{ val }}"{% if rdv.statut  ==  val %} selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="fas fa-calendar-times fa-2x d-block mb-2" style="color:#d1d5db"></i>لا توجد نتائج
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

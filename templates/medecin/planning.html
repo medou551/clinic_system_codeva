@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load clinic_extras %}
+{% block title %}جدول عملي — {{ medecin }}{% endblock %}
+{% block css %}
+<style>
+.page-header{background:linear-gradient(135deg,#1e40af,#1a6fc4);color:#fff;padding:32px 0;margin-bottom:30px}
+.page-header h1{font-size:1.6rem;font-weight:700}
+.planning-card{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden;margin-bottom:28px}
+.planning-head{background:#f8fafc;padding:16px 22px;border-bottom:1px solid #e2e8f0;font-weight:700;font-size:1rem;color:#1a6fc4}
+.jour-row{display:grid;grid-template-columns:130px 1fr 1fr 120px 60px;gap:12px;align-items:center;padding:14px 22px;border-bottom:1px solid #f0f4ff}
+.jour-row:last-child{border-bottom:none}
+.jour-row.inactif{opacity:.5}
+.jour-label{font-weight:600;font-size:.92rem;color:#2d3748}
+.time-input{border:1.5px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:.88rem;width:100%;color:#333}
+.time-input:focus{outline:none;border-color:#1a6fc4}
+.toggle-switch{position:relative;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{width:38px;height:20px;background:#ccc;border-radius:10px;position:relative;transition:.3s}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.3s}
+input:checked + .toggle-slider{background:#17c3b2}
+input:checked + .toggle-slider::before{transform:translateX(18px)}
+.btn-save{background:linear-gradient(135deg,#17c3b2,#1a6fc4);color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:.98rem;font-weight:700;cursor:pointer;transition:all .3s}
+.btn-save:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(26,111,196,.3)}
+.semaine-card{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.08);padding:22px;margin-bottom:28px}
+.rdv-pill{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:#f0f7ff;margin-bottom:8px;border-right:3px solid #1a6fc4}
+.rdv-time{font-weight:700;color:#1a6fc4;min-width:50px;font-size:.88rem}
+.rdv-patient{font-size:.88rem;color:#2d3748}
+.day-group{margin-bottom:16px}
+.day-header{font-weight:700;font-size:.88rem;color:#6c757d;margin-bottom:6px;padding:4px 0;border-bottom:1px solid #e2e8f0}
+.select-duree{border:1.5px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:.85rem;color:#333;width:100%}
+.empty{text-align:center;padding:30px;color:#adb5bd;font-size:.9rem}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1><i class="fas fa-calendar-alt me-2"></i>جدول عملي الأسبوعي</h1>
+    <p style="opacity:.85;margin:0">{{ medecin }} — حدد أيام وساعات عملك</p>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="planning-card">
+          <div class="planning-head"><i class="fas fa-clock me-2"></i>أوقات العمل الأسبوعية</div>
+
+          <div style="padding:12px 22px 6px;display:grid;grid-template-columns:130px 1fr 1fr 120px 60px;gap:12px;font-size:.78rem;color:#6c757d;font-weight:600">
+            <div>اليوم</div><div>بداية العمل</div><div>نهاية العمل</div><div>مدة الموعد</div><div>نشط</div>
+          </div>
+
+          {% for jour in planning %}
+          <div class="jour-row {% if not jour.actif %}inactif{% endif %}" id="row-{{ jour.jour }}">
+            <div class="jour-label">{{ jour.nom }}</div>
+            <div>
+              <input type="time" name="debut_{{ jour.jour }}" value="{{ jour.debut }}" class="time-input">
+            </div>
+            <div>
+              <input type="time" name="fin_{{ jour.jour }}" value="{{ jour.fin }}" class="time-input">
+            </div>
+            <div>
+              <select name="duree_{{ jour.jour }}" class="select-duree">
+                {% for d in "15,20,30,45,60"|split:"," %}
+                <option value="{{ d }}" {% if jour.duree == d|add:"0" %}selected{% endif %}>{{ d }} دقيقة</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="toggle-switch">
+                <input type="checkbox" name="actif_{{ jour.jour }}" {% if jour.actif %}checked{% endif %}
+                  onchange="document.getElementById('row-{{ jour.jour }}').classList.toggle('inactif',!this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div style="text-align:center;margin-bottom:32px">
+          <button type="submit" class="btn-save"><i class="fas fa-save me-2"></i>حفظ جدول العمل</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="semaine-card">
+        <div class="planning-head" style="margin:-22px -22px 16px;border-radius:0;padding:14px 18px">
+          <i class="fas fa-calendar-week me-2"></i>مواعيد هذا الأسبوع
+          <span style="font-size:.78rem;font-weight:400;display:block;margin-top:2px">{{ debut_semaine|date:"d/m" }} — {{ fin_semaine|date:"d/m/Y" }}</span>
+        </div>
+
+        {% if not rdvs_semaine %}
+        <div class="empty"><i class="fas fa-calendar-check fa-2x mb-2"></i><p>لا مواعيد هذا الأسبوع</p></div>
+        {% endif %}
+
+        {% regroup rdvs_semaine by date as rdvs_par_jour %}
+        {% for jour_group in rdvs_par_jour %}
+        <div class="day-group">
+          <div class="day-header">{{ jour_group.grouper|date:"l d/m" }}</div>
+          {% for rdv in jour_group.list %}
+          <div class="rdv-pill">
+            <span class="rdv-time">{{ rdv.heure|time:"H:i" }}</span>
+            <span class="rdv-patient">{{ rdv.patient.get_full_name|default:rdv.patient.username }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

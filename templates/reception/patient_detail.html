@@ -1,0 +1,103 @@
+{% extends 'reception/base_reception.html' %}
+{% block title %}ملف المريض{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-user me-2"></i>ملف المريض</h5></div>
+  <a href="{% url 'reception_patients' %}" class="btn btn-outline-secondary btn-sm px-3"><i class="fas fa-arrow-right me-1"></i>رجوع</a>
+</div>
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card text-center p-3">
+      <div style="width:70px;height:70px;background:linear-gradient(135deg,#1a6fc4,#17c3b2);border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff">
+        <i class="fas fa-user"></i>
+      </div>
+      <h5 class="fw-bold">{{ patient }}</h5>
+      {% if patient.genre %}<p class="text-muted mb-0" style="font-size:.83rem">{{ patient.get_genre_display }}</p>{% endif %}
+      <hr style="border-color:#f0f4ff">
+      <ul class="list-unstyled text-end small" style="font-size:.82rem">
+        {% if patient.telephone %}<li class="mb-1"><i class="fas fa-phone me-2" style="color:#1a6fc4"></i>{{ patient.telephone }}</li>{% endif %}
+        {% if patient.utilisateur.email %}<li class="mb-1"><i class="fas fa-envelope me-2" style="color:#1a6fc4"></i>{{ patient.utilisateur.email }}</li>{% endif %}
+        {% if patient.adresse %}<li class="mb-1"><i class="fas fa-map-marker-alt me-2" style="color:#1a6fc4"></i>{{ patient.adresse }}</li>{% endif %}
+        {% if patient.age %}<li><i class="fas fa-birthday-cake me-2" style="color:#1a6fc4"></i>{{ patient.age }} سنة</li>{% endif %}
+      </ul>
+      <a href="{% url 'reception_rdv_nouveau' %}" class="btn btn-primary btn-sm w-100 mt-2">
+        <i class="fas fa-calendar-plus me-1"></i>حجز موعد
+      </a>
+      <a href="{% url 'reception_liste_attente_ajouter' %}" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+        <i class="fas fa-hourglass-half me-1"></i>إضافة لقائمة الانتظار
+      </a>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <!-- مواعيد -->
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-calendar-alt me-2"></i>سجل المواعيد ({{ rdvs.count }})</div>
+      <div class="card-body p-0">
+        {% if rdvs %}
+        <table class="table mb-0">
+          <thead><tr><th>التاريخ</th><th>الطبيب</th><th>السبب</th><th>الحالة</th><th>الوصفة</th></tr></thead>
+          <tbody>
+            {% for r in rdvs %}
+            <tr>
+              <td>{{ r.date }}<br><small class="text-muted">{{ r.heure|time:"H:i" }}</small></td>
+              <td>{{ r.medecin }}</td>
+              <td class="text-muted" style="font-size:.78rem">{{ r.motif|truncatechars:40|default:"—" }}</td>
+              <td><span class="st-badge st-{{ r.statut }}">{{ r.get_statut_display }}</span></td>
+              <td>
+                {% if r.ordonnance %}
+                  <span class="st-badge" style="background:#d1fae5;color:#065f46"><i class="fas fa-file-prescription me-1"></i>متوفرة</span>
+                {% else %}—{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-4 text-muted" style="font-size:.83rem">لا توجد مواعيد مسجلة</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- تحاليل -->
+    {% if demandes %}
+    <div class="card mb-4">
+      <div class="card-header"><i class="fas fa-vials me-2"></i>طلبات التحاليل ({{ demandes.count }})</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead><tr><th>التحليل</th><th>الطبيب</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+          <tbody>
+            {% for d in demandes %}
+            <tr>
+              <td><strong>{{ d.analyse.nom }}</strong></td>
+              <td style="font-size:.82rem">{{ d.medecin|default:"—" }}</td>
+              <td><span class="st-badge st-{{ d.statut }}">{{ d.get_statut_display }}</span></td>
+              <td style="font-size:.78rem">{{ d.cree_le|date:"Y/m/d" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- وصفات طبية -->
+    {% if ordonnances %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-file-prescription me-2"></i>الوصفات الطبية ({{ ordonnances.count }})</div>
+      <div class="card-body p-0">
+        {% for o in ordonnances %}
+        <div class="p-3" style="border-bottom:1px solid #f0f4ff">
+          <div class="d-flex justify-content-between mb-1">
+            <strong style="font-size:.88rem"><i class="fas fa-user-md me-1 text-primary"></i>{{ o.medecin }}</strong>
+            <small class="text-muted">{{ o.cree_le|date:"Y/m/d" }}</small>
+          </div>
+          <div class="mb-1" style="font-size:.82rem"><strong>التشخيص:</strong> {{ o.diagnostic|truncatechars:100 }}</div>
+          <div style="font-size:.82rem"><strong>الوصفة:</strong> {{ o.prescription|truncatechars:120 }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}ملفي الشخصي{% endblock %}
+{% block css %}
+<style>
+.page-header { background:linear-gradient(135deg,#0d5aa7,#1a6fc4); color:#fff; padding:55px 0 40px; }
+.avatar { width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,#17c3b2,#1a6fc4); display:flex; align-items:center; justify-content:center; font-size:2.5rem; color:#fff; margin:0 auto 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h2 class="fw-bold mb-1"><i class="fas fa-id-card me-2"></i>ملفي الشخصي</h2>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-4">
+    <!-- بطاقة المعلومات -->
+    <div class="col-md-3">
+      <div class="card p-4 text-center">
+        <div class="avatar"><i class="fas fa-user"></i></div>
+        <h5 class="fw-bold">{{ user.get_full_name|default:user.username }}</h5>
+        <p class="text-muted small mb-1">{{ user.email }}</p>
+        {% if patient.telephone %}<p class="text-muted small">{{ patient.telephone }}</p>{% endif %}
+        {% if patient.age %}<p class="badge bg-primary">{{ patient.age }} سنة</p>{% endif %}
+        <hr>
+        <a href="{% url 'mes_rdv' %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+          <i class="fas fa-calendar me-1"></i>مواعيدي
+        </a>
+        <a href="{% url 'tableau_bord' %}" class="btn btn-outline-secondary btn-sm w-100">
+          <i class="fas fa-th-large me-1"></i>لوحتي
+        </a>
+      </div>
+    </div>
+
+    <!-- نموذج التعديل -->
+    <div class="col-md-9">
+      <div class="card p-4">
+        <h5 class="fw-bold mb-4"><i class="fas fa-edit me-2 text-primary"></i>تعديل المعلومات</h5>
+        <form method="POST">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">الاسم الأول</label>
+              <input type="text" name="prenom" class="form-control" value="{{ user.first_name }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">اسم العائلة</label>
+              <input type="text" name="nom" class="form-control" value="{{ user.last_name }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">البريد الإلكتروني</label>
+              <input type="email" name="email" class="form-control" value="{{ user.email }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">الهاتف</label>
+              <input type="text" name="telephone" class="form-control" value="{{ patient.telephone }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">الجنس</label>
+              <select name="genre" class="form-select">
+                <option value="">-- اختر --</option>
+                <option value="M" {% if patient.genre == 'M' %}selected{% endif %}>ذكر</option>
+                <option value="F" {% if patient.genre == 'F' %}selected{% endif %}>أنثى</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">تاريخ الميلاد</label>
+              <input type="date" name="date_naissance" class="form-control"
+                     value="{{ patient.date_naissance|default:'' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">العنوان</label>
+              <textarea name="adresse" class="form-control" rows="2">{{ patient.adresse }}</textarea>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="fas fa-save me-2"></i>حفظ التغييرات
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

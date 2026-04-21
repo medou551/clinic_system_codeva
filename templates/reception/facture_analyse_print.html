@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>فاتورة تحليل #{{ facture.id }}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+*{font-family:'Cairo',sans-serif}
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+body{background:#fff;padding:30px}
+.header{background:linear-gradient(135deg,#0d5aa7,#17c3b2);color:#fff;padding:24px 30px;border-radius:12px;margin-bottom:24px}
+.header h3{font-weight:900;margin:0;font-size:1.4rem}
+.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e8f0fe;font-size:.95rem}
+.label{color:#666;font-weight:600}
+.value{font-weight:700;color:#1a2a4a}
+.total{background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:16px 20px;text-align:center;margin-top:20px}
+.total .amount{font-size:2rem;font-weight:900;color:#166534}
+.status-payee{background:#dcfce7;color:#166534;border-radius:20px;padding:4px 14px;font-weight:700;font-size:.88rem;display:inline-block}
+.status-non{background:#fef9c3;color:#854d0e;border-radius:20px;padding:4px 14px;font-weight:700;font-size:.88rem;display:inline-block}
+@media print{.no-print{display:none}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="no-print mb-3 d-flex gap-2">
+  <button onclick="window.print()" class="btn btn-primary rounded-pill px-4">
+    <i class="fas fa-print me-1"></i>طباعة
+  </button>
+  <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill px-4">رجوع</a>
+</div>
+
+<div class="header">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h3><i class="fas fa-hospital-alt me-2"></i>العيادة الطبية</h3>
+      <div style="opacity:.85;font-size:.88rem">نواكشوط، موريتانيا</div>
+    </div>
+    <div style="text-align:left">
+      <div style="font-size:1.1rem;font-weight:700">فاتورة تحليل #{{ facture.id }}</div>
+      <div style="opacity:.85;font-size:.85rem">{{ facture.cree_le|date:"Y/m/d" }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <h6 class="fw-bold mb-3" style="color:#1a6fc4">تفاصيل الفاتورة</h6>
+    <div class="info-row"><span class="label">المريض</span><span class="value">{{ facture.patient.utilisateur.first_name }} {{ facture.patient.utilisateur.last_name }}</span></div>
+    {% if facture.patient.telephone %}<div class="info-row"><span class="label">الهاتف</span><span class="value">{{ facture.patient.telephone }}</span></div>{% endif %}
+    <div class="info-row"><span class="label">التحليل</span><span class="value">{{ facture.demande.analyse.nom }}</span></div>
+    <div class="info-row"><span class="label">الطبيب المعني</span><span class="value">{{ facture.demande.medecin|default:"—" }}</span></div>
+    <div class="info-row"><span class="label">حالة التحليل</span><span class="value">{{ facture.demande.get_statut_display }}</span></div>
+    <div class="info-row">
+      <span class="label">حالة الدفع</span>
+      <span>{% if facture.statut == 'payee' %}<span class="status-payee">مدفوعة</span>{% else %}<span class="status-non">غير مدفوعة</span>{% endif %}</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="total">
+      <div style="color:#166534;font-weight:700;margin-bottom:4px">المبلغ الإجمالي</div>
+      <div class="amount">{{ facture.montant }} MRU</div>
+    </div>
+  </div>
+</div>
+
+<div class="text-center mt-4" style="color:#aaa;font-size:.8rem">
+  شكراً لثقتكم — العيادة الطبية نواكشوط
+</div>
+</body>
+</html>

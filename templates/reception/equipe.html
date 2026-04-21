@@ -1,0 +1,44 @@
+{% extends 'reception/base_reception.html' %}
+{% block title %}فريق العمل{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-user-cog me-2"></i>فريق العمل</h5></div>
+  <a href="{% url 'reception_equipe_ajouter' %}" class="btn btn-primary btn-sm px-3"><i class="fas fa-plus me-1"></i>إضافة عضو</a>
+</div>
+<div class="alert alert-info">
+  <i class="fas fa-info-circle me-2"></i>
+  كل عضو يدخل بـ<strong>اسمه ورقم هاتفه</strong> من صفحة الدخول (خانة "مدير / استقبال")
+</div>
+<div class="card"><div class="card-body p-0">
+  {% if membres %}
+  <table class="table mb-0">
+    <thead><tr><th>الاسم</th><th>رقم الهاتف</th><th>الدور</th><th>الحالة</th><th>الإجراء</th></tr></thead>
+    <tbody>
+      {% for m in membres %}
+      <tr>
+        <td><strong>{{ m.nom }}</strong></td>
+        <td>{{ m.telephone }}</td>
+        <td><span class="role-{{ m.role }}">{{ m.get_role_display }}</span></td>
+        <td>
+          <span style="padding:2px 9px;border-radius:20px;font-size:.73rem;font-weight:700;
+            {% if m.actif %}background:#d1fae5;color:#065f46{% else %}background:#e5e7eb;color:#374151{% endif %}">
+            {% if m.actif %}نشط{% else %}معطل{% endif %}
+          </span>
+        </td>
+        <td>
+          <form method="POST" action="{% url 'reception_equipe_toggle' m.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm {% if m.actif %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+              {% if m.actif %}<i class="fas fa-ban me-1"></i>تعطيل{% else %}<i class="fas fa-check me-1"></i>تفعيل{% endif %}
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="text-center py-5 text-muted"><i class="fas fa-users fa-2x d-block mb-2" style="color:#d1d5db"></i>لا يوجد أعضاء</div>
+  {% endif %}
+</div></div>
+{% endblock %}

@@ -1,0 +1,316 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}لوحة المدير{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h5><i class="fas fa-tachometer-alt me-2" style="color:#d97706"></i>لوحة المدير</h5>
+    <div class="sub">{{ today }} — نظرة شاملة على العيادة</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'admin_medecin_ajouter' %}" class="btn btn-primary btn-sm px-3">
+      <i class="fas fa-user-md me-1"></i>طبيب جديد
+    </a>
+    <a href="{% url 'admin_staff_ajouter' %}" class="btn btn-outline-primary btn-sm px-3">
+      <i class="fas fa-user-plus me-1"></i>موظف جديد
+    </a>
+  </div>
+</div>
+
+<!-- إحصائيات رئيسية -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg">
+    <div class="sc blue text-center">
+      <div class="num">{{ stats.nb_patients }}</div>
+      <div class="lbl"><i class="fas fa-users me-1"></i>المرضى</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc green text-center">
+      <div class="num">{{ stats.nb_medecins_actifs }}</div>
+      <div class="lbl"><i class="fas fa-user-md me-1"></i>أطباء نشطون</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc purple text-center">
+      <div class="num">{{ stats.nb_staff }}</div>
+      <div class="lbl"><i class="fas fa-user-tie me-1"></i>فريق العمل</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc orange text-center">
+      <div class="num">{{ stats.rdv_today }}</div>
+      <div class="lbl"><i class="fas fa-calendar-day me-1"></i>مواعيد اليوم</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc gold text-center">
+      <div class="num">{{ stats.nb_services }}</div>
+      <div class="lbl"><i class="fas fa-briefcase-medical me-1"></i>الخدمات</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc blue text-center">
+      <div class="num">{{ stats.nb_analyses }}</div>
+      <div class="lbl"><i class="fas fa-vials me-1"></i>التحاليل</div>
+    </div>
+  </div>
+</div>
+
+<!-- إيرادات الشهر -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-coins me-2" style="color:#d97706"></i>إيرادات الشهر الحالي</span>
+        <span class="badge" style="background:#f3e8ff;color:#6b21a8">{{ today|date:"F Y" }}</span>
+      </div>
+      <div class="card-body">
+        <div class="row g-3 text-center">
+          <div class="col-md-4">
+            <div style="background:#d1fae5;border-radius:12px;padding:16px">
+              <div style="font-size:1.6rem;font-weight:900;color:#065f46">{{ stats.rev_consult|floatformat:0 }} MRU</div>
+              <div style="font-size:.8rem;color:#065f46;font-weight:600"><i class="fas fa-stethoscope me-1"></i>استشارات</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="background:#dbeafe;border-radius:12px;padding:16px">
+              <div style="font-size:1.6rem;font-weight:900;color:#1e40af">{{ stats.rev_analyse|floatformat:0 }} MRU</div>
+              <div style="font-size:.8rem;color:#1e40af;font-weight:600"><i class="fas fa-vials me-1"></i>تحاليل</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="background:linear-gradient(135deg,#2d1260,#1a6fc4);border-radius:12px;padding:16px">
+              <div style="font-size:1.6rem;font-weight:900;color:#ffd700">{{ stats.rev_total|floatformat:0 }} MRU</div>
+              <div style="font-size:.8rem;color:rgba(255,255,255,.8);font-weight:600"><i class="fas fa-chart-line me-1"></i>الإجمالي</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- تبويبات الإدارة -->
+<ul class="nav nav-tabs mb-0" id="adminTabs" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-medecins">
+    <i class="fas fa-user-md me-1"></i>الأطباء ({{ medecins.count }})
+  </button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-staff">
+    <i class="fas fa-users-cog me-1"></i>فريق العمل ({{ staff.count }})
+  </button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-services">
+    <i class="fas fa-briefcase-medical me-1"></i>الخدمات ({{ services.count }})
+  </button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-analyses">
+    <i class="fas fa-vials me-1"></i>التحاليل ({{ analyses.count }})
+  </button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-rdvs">
+    <i class="fas fa-calendar-day me-1"></i>مواعيد اليوم
+  </button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-audit">
+    <i class="fas fa-shield-alt me-1"></i>سجل المراقبة
+  </button></li>
+</ul>
+
+<div class="tab-content" id="adminTabContent">
+
+  <!-- ── الأطباء ── -->
+  <div class="tab-pane fade show active" id="tab-medecins">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold mb-0" style="color:#1a0a3a">قائمة الأطباء</h6>
+      <a href="{% url 'admin_medecin_ajouter' %}" class="btn btn-sm btn-primary px-3">
+        <i class="fas fa-plus me-1"></i>إضافة طبيب
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead><tr>
+          <th>الاسم</th><th>التخصص</th><th>الهاتف</th><th>الخبرة</th><th>الحالة</th><th>اسم المستخدم</th>
+        </tr></thead>
+        <tbody>
+          {% for m in medecins %}
+          <tr>
+            <td><strong>{{ m }}</strong></td>
+            <td>{{ m.specialite|default:"—" }}</td>
+            <td dir="ltr">{{ m.telephone|default:"—" }}</td>
+            <td>{{ m.annees_experience }} سنة</td>
+            <td>
+              {% if m.disponible %}<span class="st-actif">متاح</span>
+              {% else %}<span class="st-inactif">غير متاح</span>{% endif %}
+            </td>
+            <td>
+              {% if m.utilisateur %}<code style="font-size:.75rem">{{ m.utilisateur.username }}</code>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center py-4 text-muted">لا يوجد أطباء مسجلون</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── فريق العمل ── -->
+  <div class="tab-pane fade" id="tab-staff">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold mb-0" style="color:#1a0a3a">فريق العمل (غير الأطباء)</h6>
+      <a href="{% url 'admin_staff_ajouter' %}" class="btn btn-sm btn-primary px-3">
+        <i class="fas fa-plus me-1"></i>إضافة موظف
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead><tr>
+          <th>الاسم</th><th>الدور</th><th>الهاتف</th><th>الحالة</th><th>اسم المستخدم</th><th>إجراء</th>
+        </tr></thead>
+        <tbody>
+          {% for s in staff %}
+          <tr>
+            <td><strong>{{ s.nom }}</strong></td>
+            <td><span class="role-{{ s.role }}">{{ s.get_role_display }}</span></td>
+            <td dir="ltr">{{ s.telephone }}</td>
+            <td>
+              {% if s.actif %}<span class="st-actif">نشط</span>
+              {% else %}<span class="st-inactif">معطّل</span>{% endif %}
+            </td>
+            <td>
+              {% if s.utilisateur %}<code style="font-size:.75rem">{{ s.utilisateur.username }}</code>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td>
+              <form method="post" action="{% url 'admin_membre_toggle' s.pk %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm {% if s.actif %}btn-outline-danger{% else %}btn-outline-success{% endif %}" style="font-size:.72rem;padding:2px 10px">
+                  {% if s.actif %}<i class="fas fa-ban me-1"></i>تعطيل
+                  {% else %}<i class="fas fa-check me-1"></i>تفعيل{% endif %}
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center py-4 text-muted">لا يوجد موظفون مسجلون</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── الخدمات ── -->
+  <div class="tab-pane fade" id="tab-services">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold mb-0" style="color:#1a0a3a">الخدمات الطبية</h6>
+      <a href="{% url 'admin_service_ajouter' %}" class="btn btn-sm btn-primary px-3">
+        <i class="fas fa-plus me-1"></i>إضافة خدمة
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead><tr><th>اسم الخدمة</th><th>السعر</th><th>المدة</th><th>الحالة</th></tr></thead>
+        <tbody>
+          {% for s in services %}
+          <tr>
+            <td><i class="fas {{ s.icone }} me-2" style="color:#1a6fc4"></i><strong>{{ s.nom }}</strong></td>
+            <td><strong>{{ s.prix }} MRU</strong></td>
+            <td>{{ s.duree }} دقيقة</td>
+            <td>{% if s.actif %}<span class="st-actif">نشط</span>{% else %}<span class="st-inactif">معطّل</span>{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد خدمات</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── التحاليل ── -->
+  <div class="tab-pane fade" id="tab-analyses">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold mb-0" style="color:#1a0a3a">التحاليل الطبية المتاحة</h6>
+      <a href="{% url 'admin_analyse_ajouter' %}" class="btn btn-sm btn-primary px-3">
+        <i class="fas fa-plus me-1"></i>إضافة تحليل
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead><tr><th>اسم التحليل</th><th>الوصف</th><th>السعر</th><th>الحالة</th></tr></thead>
+        <tbody>
+          {% for a in analyses %}
+          <tr>
+            <td><i class="fas fa-vial me-2" style="color:#17c3b2"></i><strong>{{ a.nom }}</strong></td>
+            <td class="text-muted" style="font-size:.8rem">{{ a.description|default:"—"|truncatechars:60 }}</td>
+            <td><strong>{{ a.prix }} MRU</strong></td>
+            <td>{% if a.actif %}<span class="st-actif">نشط</span>{% else %}<span class="st-inactif">معطّل</span>{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد تحاليل</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── مواعيد اليوم ── -->
+  <div class="tab-pane fade" id="tab-rdvs">
+    <h6 class="fw-bold mb-3" style="color:#1a0a3a"><i class="fas fa-calendar-day me-2"></i>مواعيد اليوم — {{ today }}</h6>
+    <div class="table-responsive">
+      <table class="table">
+        <thead><tr><th>الوقت</th><th>المريض</th><th>الطبيب</th><th>الحالة</th></tr></thead>
+        <tbody>
+          {% for rdv in recent_rdvs %}
+          <tr>
+            <td dir="ltr"><strong>{{ rdv.heure|time:"H:i" }}</strong></td>
+            <td>{{ rdv.patient.get_full_name|default:rdv.patient.username }}</td>
+            <td>{{ rdv.medecin }}</td>
+            <td>
+              {% if rdv.statut == 'attente' %}<span style="background:#fff3cd;color:#856404;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">انتظار</span>
+              {% elif rdv.statut == 'confirme' %}<span style="background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">مؤكد</span>
+              {% elif rdv.statut == 'checked_in' %}<span style="background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">حضر</span>
+              {% elif rdv.statut == 'annule' %}<span style="background:#fee2e2;color:#991b1b;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">ملغي</span>
+              {% else %}<span style="background:#e5e7eb;color:#374151;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700">مكتمل</span>{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center py-4 text-muted"><i class="fas fa-calendar-times fa-2x mb-2 d-block" style="color:#d1d5db"></i>لا توجد مواعيد اليوم</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── سجل المراقبة ── -->
+  <div class="tab-pane fade" id="tab-audit">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold mb-0" style="color:#1a0a3a">آخر العمليات المسجلة</h6>
+      <a href="{% url 'journal_audit' %}" class="btn btn-sm btn-outline-primary px-3">
+        <i class="fas fa-external-link-alt me-1"></i>عرض الكل
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead><tr><th>التاريخ</th><th>المستخدم</th><th>الإجراء</th><th>التفاصيل</th></tr></thead>
+        <tbody>
+          {% for j in recent_audit %}
+          <tr>
+            <td style="font-size:.75rem;color:#888" dir="ltr">{{ j.cree_le|date:"d/m H:i" }}</td>
+            <td style="font-size:.8rem">{{ j.utilisateur|default:"—" }}</td>
+            <td>
+              {% if j.action == 'creation' %}<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:700">إنشاء</span>
+              {% elif j.action == 'connexion' %}<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:700">دخول</span>
+              {% elif j.action == 'paiement' %}<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:700">دفع</span>
+              {% elif j.action == 'annulation' %}<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:700">إلغاء</span>
+              {% else %}<span style="background:#e5e7eb;color:#374151;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:700">{{ j.get_action_display }}</span>{% endif %}
+            </td>
+            <td style="font-size:.8rem;color:#555">{{ j.description|truncatechars:70 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center py-4 text-muted">لا توجد سجلات</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

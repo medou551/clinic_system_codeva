@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}الوصفات الطبية — {{ medecin }}{% endblock %}
+{% block css %}
+<style>
+.doc-header{background:linear-gradient(135deg,#0d5aa7,#1a6fc4,#17c3b2);color:#fff;padding:35px 0 28px}
+.doc-header h2{font-size:1.5rem;font-weight:900;margin:0}
+.ordo-card{border:none;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.07);padding:18px 20px;margin-bottom:14px;background:#fff}
+.st-badge{border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:700}
+</style>
+{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{% url 'medecin_dashboard' %}" class="btn btn-light btn-sm rounded-pill px-3" style="color:#1a6fc4">
+        <i class="fas fa-arrow-right me-1"></i>رجوع
+      </a>
+      <div>
+        <h2><i class="fas fa-file-prescription me-2"></i>الوصفات الطبية</h2>
+        <p style="opacity:.8;margin:4px 0 0;font-size:.88rem">{{ medecin }} — {{ ordonnances.count }} وصفة</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="py-4">
+  <div class="container">
+    {% if ordonnances %}
+      {% for o in ordonnances %}
+      <div class="ordo-card">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+          <div>
+            <div class="fw-bold" style="font-size:.95rem">
+              <i class="fas fa-user me-1 text-primary"></i>
+              {{ o.patient.utilisateur.first_name }} {{ o.patient.utilisateur.last_name }}
+              {% if o.patient.telephone %}
+              <span class="text-muted fw-normal" style="font-size:.8rem">| {{ o.patient.telephone }}</span>
+              {% endif %}
+            </div>
+            <div class="text-muted" style="font-size:.78rem;margin-top:2px">
+              <i class="fas fa-calendar me-1"></i>{{ o.rdv.date }} {{ o.rdv.heure|time:"H:i" }}
+              <i class="fas fa-clock ms-2 me-1"></i>{{ o.cree_le|date:"Y/m/d H:i" }}
+            </div>
+          </div>
+          <a href="{% url 'medecin_ordonnance_print' o.id %}" class="btn btn-sm btn-outline-secondary" style="font-size:.75rem" target="_blank">
+            <i class="fas fa-print me-1"></i>طباعة
+          </a>
+          <a href="{% url 'medecin_rdv_notes' o.rdv.id %}" class="btn btn-sm btn-outline-primary" style="font-size:.75rem">
+            <i class="fas fa-edit me-1"></i>تعديل
+          </a>
+        </div>
+        <div class="row g-3 mt-1">
+          <div class="col-md-5">
+            <div style="background:#f0fdf4;border-radius:10px;padding:12px;font-size:.84rem;border:1px solid #bbf7d0">
+              <strong class="d-block mb-1"><i class="fas fa-stethoscope me-1 text-success"></i>التشخيص</strong>
+              {{ o.diagnostic }}
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div style="background:#eff6ff;border-radius:10px;padding:12px;font-size:.84rem;border:1px solid #bfdbfe;white-space:pre-line">
+              <strong class="d-block mb-1"><i class="fas fa-pills me-1 text-primary"></i>الوصفة</strong>
+              {{ o.prescription }}
+            </div>
+          </div>
+        </div>
+        {% if o.notes_medecin %}
+        <div class="mt-2 p-2 rounded" style="background:#fefce8;border:1px solid #fde68a;font-size:.8rem">
+          <i class="fas fa-sticky-note me-1 text-warning"></i><strong>ملاحظات:</strong> {{ o.notes_medecin }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="fas fa-file-prescription fa-3x d-block mb-3" style="color:#d1d5db"></i>
+      <p>لا توجد وصفات طبية بعد</p>
+      <a href="{% url 'medecin_dashboard' %}" class="btn btn-primary rounded-pill px-4">العودة للوحة الطبيب</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

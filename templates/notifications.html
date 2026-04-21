@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}إشعاراتي — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.page-header{background:linear-gradient(135deg,#1a6fc4,#17c3b2);color:#fff;padding:32px 0;margin-bottom:30px}
+.page-header h1{font-size:1.6rem;font-weight:700}
+.notif-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:18px 22px;margin-bottom:12px;border-right:4px solid #dee2e6;transition:all .2s;display:flex;gap:16px;align-items:flex-start}
+.notif-card.non-lue{border-right-color:#1a6fc4;background:#f0f7ff}
+.notif-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.notif-rdv{background:#e8f4fd;color:#1a6fc4}
+.notif-analyse{background:#e8f8f5;color:#17c3b2}
+.notif-ordonnance{background:#f5e8fd;color:#6f42c1}
+.notif-transfert{background:#fff3cd;color:#856404}
+.notif-general{background:#f8f9fa;color:#6c757d}
+.notif-body{flex:1}
+.notif-titre{font-weight:700;font-size:.95rem;color:#2d3748;margin-bottom:4px}
+.notif-msg{font-size:.88rem;color:#6c757d;margin-bottom:6px;line-height:1.5}
+.notif-date{font-size:.78rem;color:#adb5bd}
+.notif-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-del{background:none;border:none;color:#dc3545;cursor:pointer;font-size:.85rem;padding:4px 8px;border-radius:6px}
+.btn-del:hover{background:#ffe5e5}
+.empty-state{text-align:center;padding:60px 20px;color:#adb5bd}
+.empty-state i{font-size:3rem;margin-bottom:16px;display:block}
+.stats-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.stat-pill{background:#fff;border-radius:20px;padding:8px 18px;font-size:.85rem;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.badge-new{background:#1a6fc4;color:#fff;border-radius:10px;font-size:.72rem;padding:2px 7px;margin-right:6px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1><i class="fas fa-bell me-2"></i>إشعاراتي</h1>
+    <p style="opacity:.85;margin:0">جميع التنبيهات والإشعارات الخاصة بك</p>
+  </div>
+</div>
+<div class="container" style="max-width:760px">
+  <div class="stats-row">
+    <div class="stat-pill"><i class="fas fa-bell me-2 text-primary"></i>الإجمالي: {{ notifications|length }}</div>
+    {% if nb_non_lues > 0 %}
+    <div class="stat-pill" style="background:#e8f4fd"><i class="fas fa-circle me-2 text-primary"></i>غير مقروءة: {{ nb_non_lues }}</div>
+    {% endif %}
+  </div>
+
+  {% if not notifications %}
+  <div class="empty-state">
+    <i class="fas fa-bell-slash"></i>
+    <p style="font-size:1.1rem;font-weight:600">لا توجد إشعارات</p>
+    <p>ستظهر هنا إشعارات مواعيدك وتحاليلك</p>
+  </div>
+  {% endif %}
+
+  {% for n in notifications %}
+  <div class="notif-card {% if not n.lue %}non-lue{% endif %}">
+    <div class="notif-icon
+      {% if 'rdv' in n.type_notif %}notif-rdv
+      {% elif 'analyse' in n.type_notif %}notif-analyse
+      {% elif 'ordonnance' in n.type_notif %}notif-ordonnance
+      {% elif 'transfert' in n.type_notif %}notif-transfert
+      {% else %}notif-general{% endif %}">
+      {% if 'rdv' in n.type_notif %}<i class="fas fa-calendar-check"></i>
+      {% elif 'analyse' in n.type_notif %}<i class="fas fa-vials"></i>
+      {% elif 'ordonnance' in n.type_notif %}<i class="fas fa-prescription"></i>
+      {% elif 'transfert' in n.type_notif %}<i class="fas fa-exchange-alt"></i>
+      {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+    </div>
+    <div class="notif-body">
+      <div class="notif-titre">
+        {% if not n.lue %}<span class="badge-new">جديد</span>{% endif %}
+        {{ n.titre }}
+      </div>
+      <div class="notif-msg">{{ n.message }}</div>
+      <div class="notif-date"><i class="far fa-clock me-1"></i>{{ n.cree_le|date:"d/m/Y H:i" }}</div>
+    </div>
+    <div class="notif-actions">
+      {% if n.lien %}
+      <a href="{{ n.lien }}" class="btn btn-sm btn-outline-primary" style="font-size:.8rem;border-radius:8px">عرض</a>
+      {% endif %}
+      <form method="POST" action="{% url 'notif_supprimer' n.pk %}" style="display:inline">
+        {% csrf_token %}
+        <button type="submit" class="btn-del" title="حذف"><i class="fas fa-trash-alt"></i></button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

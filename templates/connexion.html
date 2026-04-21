@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}تسجيل الدخول — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.auth-page{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 16px;background:#f0f4ff}
+.auth-card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(26,111,196,.12);width:100%;max-width:440px;overflow:hidden}
+.auth-header{background:linear-gradient(135deg,#1a6fc4,#17c3b2);padding:32px;text-align:center;color:#fff}
+.auth-header .icon{font-size:2.5rem;margin-bottom:10px}
+.auth-header h2{font-size:1.4rem;font-weight:700}
+.auth-tabs{display:flex;border-bottom:2px solid #f0f4ff}
+.auth-tab{flex:1;padding:13px 6px;text-align:center;font-size:.88rem;font-weight:700;cursor:pointer;color:#888;border:none;background:transparent;transition:all .2s;position:relative}
+.auth-tab.active{color:#1a6fc4}
+.auth-tab.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:#1a6fc4;border-radius:2px}
+.auth-body{padding:28px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-weight:600;font-size:.88rem;color:#555;margin-bottom:6px}
+.form-group .input-icon{position:relative}
+.form-group .input-icon i{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#aaa}
+.form-group input{width:100%;padding:11px 38px 11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.95rem;font-family:inherit;transition:border .2s;color:#333;box-sizing:border-box}
+.form-group input:focus{outline:none;border-color:#1a6fc4;box-shadow:0 0 0 3px rgba(26,111,196,.1)}
+.btn-login{width:100%;padding:13px;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .3s;font-family:inherit;color:#fff}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(26,111,196,.3)}
+.auth-footer{text-align:center;margin-top:18px;font-size:.88rem;color:#777}
+.auth-footer a{color:#1a6fc4;font-weight:600;text-decoration:none}
+.info-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px 16px;font-size:.82rem;color:#0c4a6e;margin-top:14px}
+.info-box .badge-role{display:inline-block;padding:2px 10px;border-radius:12px;font-weight:700;font-size:.78rem;margin:2px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="icon"><i class="fas fa-hospital-alt"></i></div>
+      <h2>تسجيل الدخول</h2>
+      <p style="opacity:.85;font-size:.9rem;margin-top:4px">ادخل برقم الهاتف وكلمة المرور</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-patient" onclick="switchTab('patient')">
+        <i class="fas fa-user me-1"></i>مريض
+      </button>
+      <button class="auth-tab" id="tab-staff" onclick="switchTab('staff')">
+        <i class="fas fa-id-badge me-1"></i>فريق العمل
+      </button>
+    </div>
+
+    <div class="auth-body">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:.88rem">
+          {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+
+      <!-- Formulaire patient -->
+      <div id="form-patient">
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="role" value="patient">
+          <div class="form-group">
+            <label><i class="fas fa-user me-1 text-primary"></i>الاسم الكامل (أو اسم العائلة)</label>
+            <div class="input-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" name="nom" placeholder="محمد ولد أحمد" autocomplete="off" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-phone me-1 text-primary"></i>رقم الهاتف</label>
+            <div class="input-icon">
+              <i class="fas fa-phone"></i>
+              <input type="text" name="telephone" placeholder="+222 XX XX XX XX" autocomplete="off" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-lock me-1 text-primary"></i>كلمة المرور</label>
+            <div class="input-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" name="password" placeholder="********" autocomplete="current-password" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-login" style="background:linear-gradient(135deg,#1a6fc4,#17c3b2)">
+            <i class="fas fa-sign-in-alt me-2"></i>دخول كمريض
+          </button>
+        </form>
+        <div class="auth-footer">
+          ليس لديك حساب؟ <a href="{% url 'inscription' %}">سجّل الآن مجاناً</a>
+        </div>
+      </div>
+
+      <!-- Formulaire staff -->
+      <div id="form-staff" style="display:none">
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="role" value="staff">
+          <div class="form-group">
+            <label><i class="fas fa-user-tie me-1 text-primary"></i>الاسم الكامل</label>
+            <div class="input-icon">
+              <i class="fas fa-user-tie"></i>
+              <input type="text" name="nom" placeholder="كما هو مسجّل في النظام" autocomplete="off" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-phone me-1 text-primary"></i>رقم الهاتف</label>
+            <div class="input-icon">
+              <i class="fas fa-phone"></i>
+              <input type="text" name="telephone" placeholder="+222 XX XX XX XX" autocomplete="off" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-key me-1 text-primary"></i>كلمة المرور</label>
+            <div class="input-icon">
+              <i class="fas fa-key"></i>
+              <input type="password" name="password" placeholder="أول دخول: رقم الهاتف" autocomplete="current-password" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-login" style="background:linear-gradient(135deg,#1e40af,#1a6fc4)">
+            <i class="fas fa-lock-open me-2"></i>دخول المنظومة
+          </button>
+        </form>
+        <div class="info-box mt-3">
+          <i class="fas fa-info-circle me-1"></i><strong>هذه البوابة مخصصة لـ:</strong><br>
+          <span class="badge-role" style="background:#dbeafe;color:#1e40af"><i class="fas fa-cogs me-1"></i>استقبال / مدير</span>
+          <span class="badge-role" style="background:#dcfce7;color:#166534"><i class="fas fa-user-md me-1"></i>طبيب</span>
+          <span class="badge-role" style="background:#fef9c3;color:#854d0e"><i class="fas fa-flask me-1"></i>مختبر</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+function switchTab(t) {
+  document.getElementById('form-patient').style.display = t==='patient' ? 'block' : 'none';
+  document.getElementById('form-staff').style.display   = t==='staff'   ? 'block' : 'none';
+  document.getElementById('tab-patient').classList.toggle('active', t==='patient');
+  document.getElementById('tab-staff').classList.toggle('active',   t==='staff');
+}
+{% if request.POST.role == 'staff' %}switchTab('staff');{% endif %}
+</script>
+{% endblock %}

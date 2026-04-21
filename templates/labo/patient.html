@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}بيانات المريض — المختبر{% endblock %}
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header fw-bold" style="background:#f8faff;border-bottom:2px solid #e8f0fe">
+            <i class="fas fa-user-edit me-2 text-primary"></i>تعديل بيانات المريض
+          </div>
+          <div class="card-body">
+            <form method="POST">
+              {% csrf_token %}
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label fw-bold small">الاسم الأول</label>
+                  <input type="text" name="prenom" class="form-control" value="{{ patient.utilisateur.first_name }}">
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">الاسم الأخير</label>
+                  <input type="text" name="nom" class="form-control" value="{{ patient.utilisateur.last_name }}">
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">الهاتف</label>
+                  <input type="text" name="telephone" class="form-control" value="{{ patient.telephone }}">
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">الجنس</label>
+                  <select name="genre" class="form-select">
+                    <option value="M" {% if patient.genre == 'M' %}selected{% endif %}>ذكر</option>
+                    <option value="F" {% if patient.genre == 'F' %}selected{% endif %}>أنثى</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">الرقم الوطني (NNI)</label>
+                  <input type="text" name="nni" class="form-control" value="{{ patient.nni }}">
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-bold small">تاريخ الميلاد</label>
+                  <input type="date" name="date_naissance" class="form-control" value="{{ patient.date_naissance|default:'' }}">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold small">العنوان</label>
+                  <input type="text" name="adresse" class="form-control" value="{{ patient.adresse }}">
+                </div>
+              </div>
+              <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                  <i class="fas fa-save me-2"></i>حفظ التعديلات
+                </button>
+                <a href="{% url 'labo_dashboard' %}" class="btn btn-outline-secondary">رجوع</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

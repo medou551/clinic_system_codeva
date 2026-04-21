@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}حالة المدفوعات{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h3 class="fw-bold mb-1">حالة المدفوعات</h3>
+      <div class="text-muted">متابعة الفواتير المدفوعة وغير المدفوعة</div>
+    </div>
+    <div class="badge bg-danger-subtle text-danger fs-6">المتبقي: {{ total_impaye }} MRU</div>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">فواتير الاستشارات</h5>
+          <div class="table-responsive"><table class="table align-middle">
+            <thead><tr><th>#</th><th>الطبيب</th><th>المبلغ</th><th>الحالة</th></tr></thead>
+            <tbody>
+              {% for f in factures_consult %}
+              <tr>
+                <td>#{{ f.id }}</td>
+                <td>{{ f.medecin }}</td>
+                <td>{{ f.montant }} MRU</td>
+                <td>
+                  {% if f.statut == 'payee' %}
+                  <span class="badge bg-success">مدفوعة</span>
+                  {% else %}
+                  <span class="badge bg-warning text-dark">غير مدفوعة</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">لا توجد فواتير استشارات</td></tr>{% endfor %}
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">فواتير التحاليل</h5>
+          <div class="table-responsive"><table class="table align-middle">
+            <thead><tr><th>#</th><th>التحليل</th><th>المبلغ</th><th>الحالة</th></tr></thead>
+            <tbody>
+              {% for f in factures_analyse %}
+              <tr>
+                <td>#{{ f.id }}</td>
+                <td>{{ f.demande.analyse.nom }}</td>
+                <td>{{ f.montant }} MRU</td>
+                <td>
+                  {% if f.statut == 'payee' %}
+                  <span class="badge bg-success">مدفوعة</span>
+                  {% else %}
+                  <span class="badge bg-warning text-dark">غير مدفوعة</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">لا توجد فواتير تحاليل</td></tr>{% endfor %}
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

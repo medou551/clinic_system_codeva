@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}العيادة الطبية{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{%  static 'css/style.css' %}">
+  <style>
+    :root { --prime:#1a6fc4; --prime-dark:#0d5aa7; --vert:#17c3b2; --fond:#f4f8ff; }
+    * { font-family:'Cairo',sans-serif; }
+    body { background:var(--fond); color:#2d3748; }
+
+    .navbar { background:linear-gradient(135deg,var(--prime-dark),var(--prime)) !important;
+              box-shadow:0 3px 20px rgba(13,90,167,.35); padding:10px 0; }
+    .navbar-brand { font-size:1.4rem; font-weight:900; }
+    .navbar-brand .ico { color:#ffd700; }
+    .nav-link { font-weight:600; font-size:.92rem; border-radius:8px;
+                padding:7px 13px !important; margin:0 2px; transition:background .2s; }
+    .nav-link:hover,.nav-link.active { background:rgba(255,255,255,.18) !important; }
+    .btn-cta { background:var(--vert); border:none; color:#fff; font-weight:700;
+               padding:8px 22px; border-radius:25px; transition:all .25s; }
+    .btn-cta:hover { background:#13aba0; transform:translateY(-1px); color:#fff; }
+
+    .messages-wrap { position:fixed; top:72px; left:50%; transform:translateX(-50%);
+                     z-index:9999; width:92%; max-width:480px; }
+    .alert { border:none; border-radius:12px; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,.12); }
+
+    .card { border:none; border-radius:18px; box-shadow:0 4px 20px rgba(0,0,0,.07); transition:all .3s; }
+    .card:hover { transform:translateY(-5px); box-shadow:0 14px 35px rgba(26,111,196,.16); }
+
+    .section-title { font-size:2rem; font-weight:900; color:var(--prime-dark);
+                     display:inline-block; position:relative; }
+    .section-title::after { content:''; position:absolute; bottom:-8px; right:0;
+                             width:55px; height:4px; background:var(--vert); border-radius:3px; }
+
+    .form-control,.form-select { border-radius:10px; border:2px solid #e2e8f0;
+                                  padding:10px 14px; transition:all .2s; }
+    .form-control:focus,.form-select:focus { border-color:var(--prime);
+                                              box-shadow:0 0 0 3px rgba(26,111,196,.12); }
+    .btn-primary { background:linear-gradient(135deg,var(--prime),var(--prime-dark));
+                   border:none; border-radius:10px; font-weight:700; padding:10px 24px; }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,111,196,.35); }
+
+    footer { background:linear-gradient(135deg,#1a2a4a,#0d1f3c); color:#adc5e7;
+             margin-top:60px; padding:40px 0 20px; }
+    footer h6 { color:#fff; font-weight:700; margin-bottom:16px; }
+    footer a { color:#adc5e7; text-decoration:none; transition:color .2s; }
+    footer a:hover { color:var(--vert); }
+    .footer-bottom { border-top:1px solid rgba(255,255,255,.1);
+                     margin-top:30px; padding-top:20px; font-size:.9rem; }
+  </style>
+  {% block css %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand text-white" href="{% url 'accueil' %}">
+      <i class="fas fa-hospital-alt ico me-2"></i>العيادة الطبية
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'accueil' %}active{% endif %}" href="{% url 'accueil' %}"><i class="fas fa-home me-1"></i>الرئيسية</a></li>
+        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'services' %}active{% endif %}" href="{% url 'services' %}"><i class="fas fa-briefcase-medical me-1"></i>الخدمات</a></li>
+        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'medecins' %}active{% endif %}" href="{% url 'medecins' %}"><i class="fas fa-user-md me-1"></i>الأطباء</a></li>
+        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'specialites' %}active{% endif %}" href="{% url 'specialites' %}"><i class="fas fa-microscope me-1"></i>التخصصات</a></li>
+        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'analyses_disponibles' %}active{% endif %}" href="{% url 'analyses_disponibles' %}"><i class="fas fa-vials me-1"></i>التحاليل</a></li>
+      </ul>
+      <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+          {% if user.admin_profil %}
+          {% if user.admin_profil.role == 'admin' %}<li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}" style="background:rgba(255,215,0,.2);border-radius:8px;color:#ffd700!important"><i class="fas fa-crown me-1"></i>لوحة المدير</a></li>{% endif %}
+          {% if user.admin_profil.role == 'reception' or user.admin_profil.role == 'admin' %}<li class="nav-item"><a class="nav-link" href="{% url 'reception_dashboard' %}" style="background:rgba(255,215,0,.15);border-radius:8px"><i class="fas fa-cogs me-1"></i>لوحة الاستقبال</a></li>{% endif %}
+          {% if user.admin_profil.role == 'laboratoire' %}<li class="nav-item"><a class="nav-link" href="{% url 'labo_dashboard' %}" style="background:rgba(255,215,0,.15);border-radius:8px"><i class="fas fa-flask me-1"></i>لوحة المختبر</a></li>{% endif %}
+          {% if user.admin_profil.role == 'medecin' %}<li class="nav-item"><a class="nav-link" href="{% url 'medecin_dashboard' %}" style="background:rgba(255,215,0,.15);border-radius:8px"><i class="fas fa-user-md me-1"></i>لوحة الطبيب</a></li>{% endif %}
+          {% endif %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'tableau_bord' %}"><i class="fas fa-th-large me-1"></i>لوحتي</a></li>
+          <li class="nav-item me-2"><a class="btn btn-cta" href="{% url 'prendre_rdv' %}"><i class="fas fa-calendar-plus me-1"></i>احجز موعد</a></li>
+          <li class="nav-item me-1">
+            <a class="nav-link position-relative" href="{% url 'mes_notifications' %}" title="الإشعارات">
+              <i class="fas fa-bell"></i>
+              <span class="notif-badge" id="notif-count" style="display:none;position:absolute;top:4px;right:4px;background:#e63946;color:#fff;border-radius:50%;font-size:10px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-weight:700"></span>
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+              <i class="fas fa-user-circle me-1"></i>{{ user.get_full_name|default:user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-start">
+              <li><a class="dropdown-item" href="{% url 'profil' %}"><i class="fas fa-id-card me-2"></i>ملفي الشخصي</a></li>
+              <li><a class="dropdown-item" href="{% url 'mes_rdv' %}"><i class="fas fa-calendar-check me-2"></i>مواعيدي</a></li>
+              <li><a class="dropdown-item" href="{% url 'historique_visites' %}"><i class="fas fa-history me-2"></i>تاريخ الزيارات</a></li>
+              <li><a class="dropdown-item" href="{% url 'patient_analyses' %}"><i class="fas fa-vials me-2"></i>تحالـيلي</a></li>
+              <li><a class="dropdown-item" href="{% url 'mes_notifications' %}"><i class="fas fa-bell me-2"></i>إشعاراتي</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'deconnexion' %}"><i class="fas fa-sign-out-alt me-2"></i>خروج</a></li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'connexion' %}"><i class="fas fa-sign-in-alt me-1"></i>دخول</a></li>
+          <li class="nav-item"><a class="btn btn-cta" href="{% url 'inscription' %}"><i class="fas fa-user-plus me-1"></i>تسجيل</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="messages-wrap">
+  {% for m in messages %}
+    <div class="alert alert-{{ m.tags }} alert-dismissible fade show" role="alert">
+      {{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+</div>
+
+{% block content %}{% endblock %}
+
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <h6><i class="fas fa-hospital-alt me-2"></i>العيادة الطبية</h6>
+        <p class="small">نقدم أفضل الرعاية الصحية بأيدي أمهر الأطباء وأحدث التقنيات الطبية.</p>
+      </div>
+      <div class="col-md-2 mb-4">
+        <h6>روابط سريعة</h6>
+        <ul class="list-unstyled small">
+          <li><a href="{% url 'accueil' %}">الرئيسية</a></li>
+          <li><a href="{% url 'services' %}">الخدمات</a></li>
+          <li><a href="{% url 'medecins' %}">الأطباء</a></li>
+          <li><a href="{% url 'prendre_rdv' %}">حجز موعد</a></li>
+        </ul>
+      </div>
+      <div class="col-md-3 mb-4">
+        <h6>تواصل معنا</h6>
+        <ul class="list-unstyled small">
+          <li><i class="fas fa-phone me-2 text-info"></i>+222 XX XX XX XX</li>
+          <li><i class="fas fa-envelope me-2 text-info"></i>info@clinic.mr</li>
+          <li><i class="fas fa-map-marker-alt me-2 text-info"></i>نواكشوط، موريتانيا</li>
+        </ul>
+      </div>
+      <div class="col-md-3 mb-4">
+        <h6>ساعات العمل</h6>
+        <ul class="list-unstyled small">
+          <li><i class="fas fa-clock me-2 text-info"></i>الأحد - الخميس: 8ص - 8م</li>
+          <li><i class="fas fa-clock me-2 text-info"></i>السبت: 9ص - 2م</li>
+          <li><i class="fas fa-times-circle me-2 text-danger"></i>الجمعة: مغلق</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom text-center">
+      <p class="mb-0">© 2026 العيادة الطبية — جميع الحقوق محفوظة</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block js %}{% endblock %}
+{% if user.is_authenticated %}
+<script>
+function refreshNotifBadge(){
+  fetch("{% url 'notif_count_api' %}").then(r=>r.json()).then(d=>{
+    const b=document.getElementById('notif-count');
+    if(b){b.textContent=d.count;b.style.display=d.count>0?'flex':'none';}
+  }).catch(()=>{});
+}
+refreshNotifBadge();
+setInterval(refreshNotifBadge,60000);
+</script>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block title %}الرئيسية — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.hero{background:linear-gradient(135deg,#0d5aa7 0%,#1a6fc4 55%,#17c3b2 100%);color:#fff;padding:90px 0 70px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-30%;right:-10%;width:500px;height:500px;background:rgba(255,255,255,.05);border-radius:50%}
+.hero h1{font-size:2.8rem;font-weight:900;line-height:1.2}
+.stats-box{background:rgba(255,255,255,.13);border-radius:16px;padding:20px;margin-top:35px;backdrop-filter:blur(8px)}
+.stat-n{font-size:2.2rem;font-weight:900}
+.btn-hero{background:#fff;color:#0d5aa7;font-weight:800;padding:13px 34px;border-radius:30px;box-shadow:0 8px 25px rgba(0,0,0,.2);transition:all .3s;border:none}
+.btn-hero:hover{transform:translateY(-3px);color:#0d5aa7}
+.btn-hero2{border:2px solid #fff;color:#fff;font-weight:700;padding:13px 34px;border-radius:30px;transition:all .3s;background:transparent}
+.btn-hero2:hover{background:#fff;color:#0d5aa7}
+.svc-icon{width:65px;height:65px;border-radius:16px;background:linear-gradient(135deg,#e8f0fe,#c5d8f8);display:flex;align-items:center;justify-content:center;font-size:1.7rem;color:#1a6fc4;margin-bottom:14px}
+.doc-avatar{height:170px;background:linear-gradient(135deg,#e8f0fe,#c5d8f8);display:flex;align-items:center;justify-content:center;font-size:4.5rem;color:#1a6fc4;border-radius:16px 16px 0 0}
+.spec-tag{background:#e8f0fe;color:#1a6fc4;padding:3px 12px;border-radius:20px;font-size:.82rem;font-weight:700}
+.exp-badge{background:#fff3cd;color:#856404;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:600}
+.spec-card .header{padding:22px;text-align:center;color:#fff;background:linear-gradient(135deg,#1a6fc4,#17c3b2)}
+.cta-section{background:linear-gradient(135deg,#17c3b2,#0d9e90);border-radius:24px;padding:55px 40px;color:#fff}
+.section-bg{background:#f0f4ff}
+</style>
+{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <p class="mb-2" style="background:rgba(255,255,255,.15);display:inline-block;padding:5px 16px;border-radius:20px;font-size:.9rem">
+          <i class="fas fa-circle text-success me-1" style="font-size:.6rem"></i>العيادة مفتوحة الآن
+        </p>
+        <h1>رعاية صحية <span style="color:#ffd700">متكاملة</span><br>لصحتك وعافيتك</h1>
+        <p class="my-3" style="font-size:1.15rem;opacity:.9">أمهر الأطباء • أحدث التقنيات • في قلب نواكشوط</p>
+        <div class="d-flex gap-3 flex-wrap mt-4">
+          <a href="{% url 'prendre_rdv' %}" class="btn btn-hero"><i class="fas fa-calendar-plus me-2"></i>احجز موعدك الآن</a>
+          <a href="{% url 'medecins' %}" class="btn btn-hero2"><i class="fas fa-user-md me-2"></i>تعرّف على أطبائنا</a>
+        </div>
+        <div class="stats-box">
+          <div class="row text-center">
+            <div class="col-4"><div class="stat-n">+500</div><small>مريض راضٍ</small></div>
+            <div class="col-4"><div class="stat-n">{{ medecins|length }}+</div><small>طبيب متخصص</small></div>
+            <div class="col-4"><div class="stat-n">{{ specialites|length }}</div><small>تخصص طبي</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5 text-center d-none d-lg-block">
+        <i class="fas fa-hospital-alt" style="font-size:13rem;opacity:.12"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 section-bg">
+  <div class="container">
+    <div class="text-center mb-5"><span class="section-title">تخصصاتنا الطبية</span></div>
+    <div class="row g-3">
+      {% for sp in specialites %}
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% url 'medecins' %}?specialite={{ sp.id }}" class="text-decoration-none">
+          <div class="card text-center p-0 h-100">
+            <div class="header" style="background:linear-gradient(135deg,#1a6fc4,#17c3b2);color:#fff;padding:20px;border-radius:16px 16px 0 0">
+              <i class="fas {{ sp.icone }} fa-2x mb-2"></i>
+              <div class="fw-bold small">{{ sp.nom }}</div>
+            </div>
+            <div class="card-body py-2"><small class="text-muted">{{ sp.medecins.count }} طبيب</small></div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5"><span class="section-title">خدماتنا الطبية</span></div>
+    <div class="row g-4">
+      {% for s in services %}
+      <div class="col-md-4">
+        <div class="card h-100 p-4">
+          <div class="svc-icon"><i class="fas {{ s.icone }}"></i></div>
+          <h5 class="fw-bold">{{ s.nom }}</h5>
+          <p class="text-muted small flex-grow-1">{{ s.description }}</p>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span class="fw-bold text-primary fs-5">{{ s.prix }} MRU</span>
+            <a href="{% url 'prendre_rdv' %}" class="btn btn-sm btn-outline-primary rounded-pill">احجز</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4"><a href="{% url 'services' %}" class="btn btn-outline-primary rounded-pill px-5">جميع الخدمات <i class="fas fa-arrow-left ms-1"></i></a></div>
+  </div>
+</section>
+
+<section class="py-5 section-bg">
+  <div class="container">
+    <div class="text-center mb-5"><span class="section-title">أطباؤنا المتميزون</span></div>
+    <div class="row g-4">
+      {% for d in medecins %}
+      <div class="col-md-3">
+        <div class="card h-100">
+          <div class="doc-avatar"><i class="fas fa-user-md"></i></div>
+          <div class="card-body text-center">
+            <h6 class="fw-bold mb-1">{{ d }}</h6>
+            {% if d.specialite %}<span class="spec-tag">{{ d.specialite }}</span>{% endif %}
+            <p class="my-2"><span class="exp-badge"><i class="fas fa-award me-1"></i>{{ d.annees_experience }} سنة خبرة</span></p>
+            {% if d.telephone %}<p class="text-muted small mb-2"><i class="fas fa-phone me-1 text-primary"></i>{{ d.telephone }}</p>{% endif %}
+            <a href="{% url 'prendre_rdv' %}?medecin={{ d.id }}" class="btn btn-primary btn-sm w-100"><i class="fas fa-calendar-plus me-1"></i>احجز معه</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4"><a href="{% url 'medecins' %}" class="btn btn-outline-primary rounded-pill px-5">جميع الأطباء <i class="fas fa-arrow-left ms-1"></i></a></div>
+  </div>
+</section>
+
+<!-- ── قسم التحاليل المتاحة ── -->
+<section class="py-5" style="background:#fff">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="section-title"><i class="fas fa-flask me-2"></i>تحاليلنا المخبرية</span>
+      <p class="text-muted mt-2">نوفر مجموعة شاملة من التحاليل الطبية بأسعار مناسبة</p>
+    </div>
+    {% if nb_analyses %}
+    <div class="row g-3 justify-content-center mb-4">
+      {% for a in analyses_accueil %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card text-center h-100 p-0" style="border-radius:14px;box-shadow:0 4px 16px rgba(26,111,196,.08)">
+          <div style="background:linear-gradient(135deg,#e8f0fe,#f0f4ff);padding:20px;border-radius:14px 14px 0 0">
+            <div style="width:50px;height:50px;background:#fff;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:1.4rem;color:#17c3b2;box-shadow:0 3px 10px rgba(23,195,178,.15);margin-bottom:10px">
+              <i class="fas fa-vial"></i>
+            </div>
+            <div style="font-weight:800;font-size:.9rem;color:#1a2a4a">{{ a.nom }}</div>
+          </div>
+          <div class="card-body py-2">
+            <div style="background:linear-gradient(135deg,#17c3b2,#0d9e90);color:#fff;border-radius:20px;padding:4px 14px;font-weight:800;font-size:.95rem;display:inline-block">{{ a.prix }} MRU</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center">
+      <a href="{% url 'analyses_disponibles' %}" class="btn btn-outline-primary rounded-pill px-5">
+        كل التحاليل ({{ nb_analyses }}) <i class="fas fa-arrow-left ms-1"></i>
+      </a>
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-muted">
+      <i class="fas fa-flask fa-2x mb-2 d-block" style="color:#d1d5db"></i>
+      <p>لا توجد تحاليل مضافة حالياً</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="cta-section text-center">
+      <i class="fas fa-calendar-check fa-3x mb-3" style="opacity:.8"></i>
+      <h2 class="fw-bold mb-3">هل أنت مستعد لحجز موعدك؟</h2>
+      <p class="mb-4 fs-5" style="opacity:.9">احجز الآن وسيتواصل معك فريقنا في أقرب وقت</p>
+      {% if user.is_authenticated %}
+        <a href="{% url 'prendre_rdv' %}" class="btn btn-hero fs-5 px-5 py-3"><i class="fas fa-calendar-plus me-2"></i>احجز الآن</a>
+      {% else %}
+        <a href="{% url 'inscription' %}" class="btn btn-hero fs-5 px-5 py-3"><i class="fas fa-user-plus me-2"></i>سجّل وابدأ الحجز</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

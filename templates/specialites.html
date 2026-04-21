@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}التخصصات — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.page-header { background:linear-gradient(135deg,#0d5aa7,#1a6fc4); color:#fff; padding:55px 0 40px; }
+.spec-card { border-radius:18px; overflow:hidden; }
+.spec-header { background:linear-gradient(135deg,#1a6fc4,#17c3b2); color:#fff; padding:24px; text-align:center; }
+.spec-header i { font-size:2.5rem; margin-bottom:8px; display:block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h2 class="fw-bold mb-1"><i class="fas fa-microscope me-2"></i>التخصصات الطبية</h2>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accueil' %}" class="text-white-50">الرئيسية</a></li>
+        <li class="breadcrumb-item active text-white">التخصصات</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-4">
+    {% for sp in specialites %}
+    <div class="col-md-4">
+      <div class="card spec-card h-100">
+        <div class="spec-header">
+          <i class="fas {{ sp.icone }}"></i>
+          <h5 class="fw-bold mb-0">{{ sp.nom }}</h5>
+        </div>
+        <div class="card-body">
+          {% if sp.description %}<p class="text-muted small">{{ sp.description }}</p>{% endif %}
+          <p class="text-muted small"><i class="fas fa-user-md me-1"></i>{{ sp.medecins.count }} طبيب</p>
+          <a href="{% url 'medecins' %}?specialite={{ sp.id }}" class="btn btn-outline-primary btn-sm rounded-pill">
+            عرض الأطباء <i class="fas fa-arrow-left ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="fas fa-microscope fa-3x text-muted mb-3"></i>
+      <p class="text-muted">لا توجد تخصصات مضافة بعد</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

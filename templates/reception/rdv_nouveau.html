@@ -1,0 +1,108 @@
+{% extends 'reception/base_reception.html' %}
+{% load clinic_extras %}
+{% block title %}موعد جديد{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-calendar-plus me-2"></i>إنشاء موعد جديد</h5></div>
+  <a href="{% url 'reception_rdv' %}" class="btn btn-outline-secondary btn-sm px-3"><i class="fas fa-arrow-right me-1"></i>رجوع</a>
+</div>
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-body p-4">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="font-size:.85rem">المريض *</label>
+            <select name="patient" class="form-select" required>
+              <option value="">-- اختر مريضاً --</option>
+              {% for p in patients %}
+              <option value="{{ p.id }}">{{ p }} — {{ p.telephone }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="font-size:.85rem">التخصص (للتصفية)</label>
+            <select id="spec-f" class="form-select" onchange="filterMed()">
+              <option value="">كل التخصصات</option>
+              {% for sp in specialites %}<option value="{{ sp.id }}">{{ sp.nom }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="font-size:.85rem">الطبيب *</label>
+            <select name="medecin" id="med-sel" class="form-select" required>
+              <option value="">-- اختر طبيباً --</option>
+              {% for m in medecins %}
+              <option value="{{ m.id }}" data-spec="{{ m.specialite_id }}">{{ m }} — {{ m.specialite }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="font-size:.85rem">الخدمة *</label>
+            <select name="service" id="service-sel" class="form-select" required>
+              <option value="">-- اختر الخدمة --</option>
+            </select>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-bold" style="font-size:.85rem">التاريخ *</label>
+              <input type="date" name="date" id="date-inp" class="form-control" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold" style="font-size:.85rem">الوقت *</label>
+              <select name="heure" class="form-select" required>
+                <option value="">--</option>
+                {% for h in "08:00,08:30,09:00,09:30,10:00,10:30,11:00,11:30,14:00,14:30,15:00,15:30,16:00,16:30,17:00,17:30"|split:"," %}
+                <option value="{{ h }}">{{ h }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="font-size:.85rem">سبب الزيارة</label>
+            <textarea name="motif" class="form-control" rows="3" placeholder="صف سبب الزيارة..."></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-bold" style="font-size:.85rem">الحالة الأولية</label>
+            <select name="statut" class="form-select">
+              <option value="confirme">مؤكد</option>
+              <option value="attente">في الانتظار</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+            <i class="fas fa-check-circle me-2"></i>إنشاء الموعد
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+const SERVICES_BY_MEDECIN = {{ services_by_medecin_json|safe }};
+const d = document.getElementById('date-inp');
+if(d){ const t=new Date().toISOString().split('T')[0]; d.min=t; d.value=t; }
+function updateServices(){
+  const mid = document.getElementById('med-sel').value;
+  const sel = document.getElementById('service-sel');
+  const items = SERVICES_BY_MEDECIN[mid] || [];
+  sel.innerHTML = '<option value="">-- اختر الخدمة --</option>';
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.nom;
+    sel.appendChild(opt);
+  });
+}
+function filterMed(){
+  const sid = document.getElementById('spec-f').value;
+  const sel = document.getElementById('med-sel');
+  Array.from(sel.options).forEach(o=>{ if(!o.value)return; o.hidden = sid && o.dataset.spec!==sid; });
+  sel.value='';
+  updateServices();
+}
+document.getElementById('med-sel').addEventListener('change', updateServices);
+updateServices();
+</script>
+{% endblock %}

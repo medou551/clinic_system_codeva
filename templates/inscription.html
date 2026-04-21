@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}تسجيل حساب جديد — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.auth-page{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 16px;background:#f0f4ff}
+.auth-card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(26,111,196,.12);width:100%;max-width:460px;overflow:hidden}
+.auth-header{background:linear-gradient(135deg,#1a6fc4,#17c3b2);padding:28px;text-align:center;color:#fff}
+.auth-header .icon{font-size:2.2rem;margin-bottom:8px}
+.auth-header h2{font-size:1.3rem;font-weight:700}
+.auth-header p{opacity:.85;font-size:.88rem;margin-top:3px}
+.auth-body{padding:26px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-weight:600;font-size:.85rem;color:#555;margin-bottom:5px}
+.form-group input,.form-group select{width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.92rem;font-family:inherit;transition:border .2s;color:#333}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#1a6fc4;box-shadow:0 0 0 3px rgba(26,111,196,.1)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.required{color:#e63946}
+.btn-register{width:100%;padding:12px;background:linear-gradient(135deg,#17c3b2,#1a6fc4);color:#fff;border:none;border-radius:12px;font-size:.98rem;font-weight:700;cursor:pointer;transition:all .3s;font-family:inherit;margin-top:6px}
+.btn-register:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(26,111,196,.3)}
+.auth-footer{text-align:center;margin-top:16px;font-size:.88rem;color:#777}
+.auth-footer a{color:#1a6fc4;font-weight:600;text-decoration:none}
+.alert{border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.88rem;font-weight:600;border:none}
+.alert-danger{background:#fef2f2;color:#dc2626}
+.info-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:.83rem;color:#1e40af;margin-bottom:16px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="icon"><i class="fas fa-user-plus"></i></div>
+      <h2>إنشاء حساب جديد</h2>
+      <p>أنشئ حسابك بكلمة مرور آمنة</p>
+    </div>
+    <div class="auth-body">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+
+      <div class="info-note">
+        <i class="fas fa-info-circle me-1"></i>
+        ستستخدم <strong>رقم هاتفك وكلمة المرور</strong> لتسجيل الدخول في كل مرة
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+        <div class="row2">
+          <div class="form-group">
+            <label>الاسم <span class="required">*</span></label>
+            <input type="text" name="nom" placeholder="" autocomplete="off" required>
+          </div>
+          <div class="form-group">
+            <label>الاسم الأول</label>
+            <input type="text" name="prenom" placeholder="" autocomplete="off">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label>رقم الهاتف <span class="required">*</span></label>
+            <input type="text" name="telephone" placeholder="" autocomplete="off" required>
+          </div>
+          <div class="form-group">
+            <label>الجنس</label>
+            <select name="genre">
+              <option value="">-- اختر --</option>
+              <option value="M">ذكر</option>
+              <option value="F">أنثى</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>البريد الإلكتروني (اختياري)</label>
+          <input type="email" name="email" placeholder="" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>العنوان</label>
+          <input type="text" name="adresse" placeholder="">
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label>كلمة المرور <span class="required">*</span></label>
+            <input type="password" name="password" minlength="8" required>
+          </div>
+          <div class="form-group">
+            <label>تأكيد كلمة المرور <span class="required">*</span></label>
+            <input type="password" name="password_confirm" minlength="8" required>
+          </div>
+        </div>
+        <button type="submit" class="btn-register">
+          <i class="fas fa-check-circle me-2"></i>إنشاء الحساب
+        </button>
+      </form>
+      <div class="auth-footer">
+        لديك حساب؟ <a href="{% url 'connexion' %}">تسجيل الدخول</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

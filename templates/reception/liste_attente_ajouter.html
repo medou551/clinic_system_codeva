@@ -1,0 +1,57 @@
+{% extends 'reception/base_reception.html' %}
+{% load clinic_extras %}
+{% block title %}إضافة لقائمة الانتظار{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-user-plus me-2"></i>إضافة مريض لقائمة الانتظار</h5></div>
+  <a href="{% url 'reception_liste_attente' %}" class="btn btn-outline-secondary btn-sm px-3">
+    <i class="fas fa-arrow-right me-1"></i>رجوع
+  </a>
+</div>
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-body p-4">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="font-size:.85rem">المريض *</label>
+            <select name="patient" class="form-select" required>
+              <option value="">-- اختر مريضاً --</option>
+              {% for p in patients %}
+              <option value="{{ p.id }}">{{ p }} — {{ p.telephone }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="font-size:.85rem">الطبيب *</label>
+            <select name="medecin" class="form-select" required>
+              <option value="">-- اختر طبيباً --</option>
+              {% for m in medecins %}
+              <option value="{{ m.id }}">{{ m }} — {{ m.specialite }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold" style="font-size:.85rem">التاريخ المرغوب *</label>
+            <input type="date" name="date_souhaitee" id="date-inp" class="form-control" required>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-bold" style="font-size:.85rem">ملاحظات</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="سبب الزيارة أو أي ملاحظات..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+            <i class="fas fa-plus-circle me-2"></i>إضافة لقائمة الانتظار
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+const d = document.getElementById('date-inp');
+if(d){ const t=new Date().toISOString().split('T')[0]; d.min=t; d.value=t; }
+</script>
+{% endblock %}

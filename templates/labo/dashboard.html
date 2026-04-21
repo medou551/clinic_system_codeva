@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}لوحة المختبر{% endblock %}
+{% block css %}
+<style>
+:root{--labo:#f59e0b}
+.labo-header{background:linear-gradient(135deg,#1a2a4a,#1a6fc4);color:#fff;padding:35px 0 28px}
+.labo-header h2{font-size:1.6rem;font-weight:900;margin:0}
+.stat-card{border:none;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,.07);text-align:center;padding:22px 16px}
+.stat-card .n{font-size:2.2rem;font-weight:900;line-height:1}
+.stat-card .l{font-size:.8rem;color:#888;margin-top:6px;font-weight:600}
+.st-badge{border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;display:inline-block;white-space:nowrap}
+.st-payee    {background:#dbeafe;color:#1e40af}
+.st-en_cours {background:#fef3c7;color:#92400e}
+.st-prete    {background:#dcfce7;color:#166534}
+.demande-row{background:#fff;border-radius:14px;border:1.5px solid #e8f0fe;padding:14px 18px;margin-bottom:10px;transition:all .2s}
+.demande-row:hover{border-color:#f59e0b;box-shadow:0 4px 16px rgba(245,158,11,.1)}
+.demande-row .analyse-name{font-weight:800;font-size:.95rem;color:#1a2a4a}
+.demande-row .patient-name{font-size:.85rem;color:#555}
+.filter-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filter-tab{padding:7px 18px;border-radius:20px;border:2px solid #e2e8f0;background:#fff;font-weight:600;font-size:.83rem;cursor:pointer;text-decoration:none;color:#555;transition:all .2s}
+.filter-tab.active,.filter-tab:hover{border-color:#1a6fc4;background:#1a6fc4;color:#fff}
+.urgence{background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;padding:6px 12px;font-size:.78rem;color:#dc2626;font-weight:700}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="labo-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem">
+        <i class="fas fa-flask"></i>
+      </div>
+      <div>
+        <h2>لوحة المختبر</h2>
+        <p style="opacity:.8;margin:0;font-size:.88rem">التحاليل المدفوعة والمعلّقة للإنجاز</p>
+      </div>
+      <div class="ms-auto">
+        <span style="background:rgba(245,158,11,.2);color:#fef3c7;border-radius:20px;padding:6px 18px;font-size:.88rem;font-weight:700">
+          <i class="fas fa-clock me-1"></i>{{ stats.payees }} بانتظار الإنجاز
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="py-4">
+  <div class="container">
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-top:4px solid #3b82f6">
+          <div class="n" style="color:#3b82f6">{{ stats.payees }}</div>
+          <div class="l"><i class="fas fa-coins me-1"></i>مدفوعة — تنتظر</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-top:4px solid #f59e0b">
+          <div class="n" style="color:#f59e0b">{{ stats.en_cours }}</div>
+          <div class="l"><i class="fas fa-spinner me-1"></i>قيد الإنجاز</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-top:4px solid #22c55e">
+          <div class="n" style="color:#22c55e">{{ stats.pretes }}</div>
+          <div class="l"><i class="fas fa-check-double me-1"></i>نتائج جاهزة</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-top:4px solid #6366f1">
+          <div class="n" style="color:#6366f1">{{ stats.total }}</div>
+          <div class="l"><i class="fas fa-list me-1"></i>الإجمالي</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtre -->
+    <div class="filter-tabs">
+      <a href="{% url 'labo_dashboard' %}" class="filter-tab {% if not filtre %}active{% endif %}">الكل</a>
+      <a href="?statut=payee"    class="filter-tab {% if filtre == 'payee' %}active{% endif %}">
+        <i class="fas fa-coins me-1"></i>مدفوعة ({{ stats.payees }})
+      </a>
+      <a href="?statut=en_cours" class="filter-tab {% if filtre == 'en_cours' %}active{% endif %}">
+        <i class="fas fa-spinner me-1"></i>قيد الإنجاز ({{ stats.en_cours }})
+      </a>
+      <a href="?statut=prete"    class="filter-tab {% if filtre == 'prete' %}active{% endif %}">
+        <i class="fas fa-check me-1"></i>جاهزة ({{ stats.pretes }})
+      </a>
+    </div>
+
+    <!-- Liste demandes -->
+    {% if demandes %}
+      {% for d in demandes %}
+      <div class="demande-row">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+              <span class="analyse-name"><i class="fas fa-vial me-1 text-primary"></i>{{ d.analyse.nom }}</span>
+              <span class="st-badge st-{{ d.statut }}">{{ d.get_statut_display }}</span>
+              {% if d.statut == 'payee' %}
+              <span class="urgence"><i class="fas fa-exclamation me-1"></i>تنتظر الإنجاز</span>
+              {% endif %}
+            </div>
+            <div class="patient-name">
+              <i class="fas fa-user me-1 text-muted"></i>
+              <strong>{{ d.patient.utilisateur.first_name }} {{ d.patient.utilisateur.last_name }}</strong>
+              {% if d.patient.telephone %}&nbsp;|&nbsp;<i class="fas fa-phone me-1 text-muted"></i>{{ d.patient.telephone }}{% endif %}
+            </div>
+            <div class="text-muted mt-1" style="font-size:.78rem">
+              <i class="fas fa-user-md me-1"></i>{{ d.medecin|default:"—" }}
+              &nbsp;|&nbsp;
+              <i class="fas fa-clock me-1"></i>{{ d.cree_le|date:"Y/m/d H:i" }}
+              &nbsp;|&nbsp;
+              <strong style="color:#1a6fc4">{{ d.analyse.prix }} MRU</strong>
+            </div>
+          </div>
+          <div class="d-flex flex-column gap-2 align-items-end">
+            {% if d.statut != 'prete' %}
+            <a href="{% url 'labo_resultat' d.id %}" class="btn btn-sm btn-primary px-3">
+              <i class="fas fa-edit me-1"></i>{% if d.statut == 'payee' %}بدء التحليل{% else %}إكمال النتيجة{% endif %}
+            </a>
+            {% else %}
+            <a href="{% url 'labo_resultat' d.id %}" class="btn btn-sm btn-outline-success px-3">
+              <i class="fas fa-eye me-1"></i>عرض النتيجة
+            </a>
+            {% endif %}
+            <a href="{% url 'labo_modifier_patient' d.patient.id %}" class="btn btn-sm btn-outline-secondary px-3">
+              <i class="fas fa-user-edit me-1"></i>بيانات المريض
+            </a>
+          </div>
+        </div>
+        {% if d.statut == 'prete' and d.resultat %}
+        <div class="mt-2 p-2 rounded" style="background:#f0fdf4;border:1px solid #86efac;font-size:.82rem">
+          <i class="fas fa-check-circle me-1 text-success"></i><strong>النتيجة:</strong>
+          {{ d.resultat|truncatechars:120 }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="fas fa-flask fa-3x d-block mb-3" style="color:#d1d5db"></i>
+        <h6 class="fw-bold">لا توجد طلبات تحاليل</h6>
+        <p class="small">ستظهر التحاليل المدفوعة هنا فور دفع المريض في الاستقبال</p>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

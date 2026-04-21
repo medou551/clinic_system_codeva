@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}ملاحظات الموعد — {{ rdv.patient.get_full_name }}{% endblock %}
+{% block css %}
+<style>
+.doc-header{background:linear-gradient(135deg,#0d5aa7,#1a6fc4,#17c3b2);color:#fff;padding:35px 0 28px}
+.doc-header h2{font-size:1.4rem;font-weight:900;margin:0}
+.section-card{border:none;border-radius:18px;box-shadow:0 4px 20px rgba(0,0,0,.07);margin-bottom:22px;overflow:hidden}
+.section-card .section-header{padding:13px 20px;font-weight:800;font-size:.95rem;border-bottom:2px solid #f0f4ff;background:#f8faff}
+.form-control,.form-select{border-radius:10px;border:1.5px solid #e2e8f0;font-size:.9rem;font-family:inherit}
+.form-control:focus,.form-select:focus{border-color:#1a6fc4;box-shadow:0 0 0 3px rgba(26,111,196,.1)}
+.btn-primary{background:linear-gradient(135deg,#1a6fc4,#0d5aa7);border:none;border-radius:10px;font-weight:700}
+.st-badge{border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:700}
+.st-attente{background:#fff3cd;color:#856404}.st-confirme{background:#d1fae5;color:#065f46}
+.st-annule{background:#fee2e2;color:#991b1b}.st-termine{background:#e5e7eb;color:#374151}
+</style>
+{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <a href="{% url 'medecin_dashboard' %}" class="btn btn-light btn-sm rounded-pill px-3" style="color:#1a6fc4">
+        <i class="fas fa-arrow-right me-1"></i>رجوع
+      </a>
+      <div>
+        <h2><i class="fas fa-file-medical me-2"></i>ملف الموعد</h2>
+        <p style="opacity:.8;margin:4px 0 0;font-size:.88rem">
+          {{ rdv.patient.get_full_name|default:rdv.patient.username }}
+          — {{ rdv.date }} {{ rdv.heure|time:"H:i" }}
+        </p>
+      </div>
+      <span class="st-badge st-{{ rdv.statut }} ms-auto">{{ rdv.get_statut_display }}</span>
+    </div>
+  </div>
+</div>
+
+<section class="py-4">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Colonne gauche : info patient + notes rapides -->
+      <div class="col-lg-5">
+
+        <!-- Infos patient -->
+        <div class="section-card">
+          <div class="section-header"><i class="fas fa-user me-2 text-primary"></i>معلومات المريض</div>
+          <div class="card-body p-3">
+            {% with p=rdv.patient %}
+            <ul class="list-unstyled mb-0" style="font-size:.88rem">
+              <li class="mb-2"><strong>الاسم:</strong> {{ p.get_full_name|default:p.username }}</li>
+              {% if p.profil.telephone %}<li class="mb-2"><strong>الهاتف:</strong> {{ p.profil.telephone }}</li>{% endif %}
+              {% if p.profil.age %}<li class="mb-2"><strong>العمر:</strong> {{ p.profil.age }} سنة</li>{% endif %}
+              {% if p.profil.genre %}<li><strong>الجنس:</strong> {{ p.profil.get_genre_display }}</li>{% endif %}
+            </ul>
+            {% endwith %}
+          </div>
+        </div>
+
+        <!-- Motif -->
+        {% if rdv.motif %}
+        <div class="section-card">
+          <div class="section-header"><i class="fas fa-comment-medical me-2 text-primary"></i>سبب الزيارة</div>
+          <div class="card-body p-3" style="font-size:.88rem">{{ rdv.motif }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Notes rapides -->
+        <div class="section-card">
+          <div class="section-header"><i class="fas fa-sticky-note me-2 text-primary"></i>ملاحظات سريعة</div>
+          <div class="card-body p-3">
+            <form method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="notes">
+              <textarea name="notes" class="form-control mb-3" rows="4"
+                placeholder="أدخل ملاحظاتك على هذا الموعد...">{{ rdv.notes }}</textarea>
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-save me-2"></i>حفظ الملاحظات
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Colonne droite : ordonnance -->
+      <div class="col-lg-7">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="fas fa-file-prescription me-2 text-primary"></i>
+            {% if rdv.ordonnance %}تعديل الوصفة الطبية{% else %}إضافة تشخيص ووصفة طبية{% endif %}
+          </div>
+          <div class="card-body p-4">
+            {% if rdv.ordonnance %}
+            <div class="alert alert-success py-2 mb-3" style="font-size:.82rem;border-radius:10px">
+              <i class="fas fa-check-circle me-1"></i>
+              تم إنشاء الوصفة بتاريخ {{ rdv.ordonnance.cree_le|date:"Y/m/d H:i" }}
+            </div>
+            {% endif %}
+            <form method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="ordonnance">
+              <div class="mb-3">
+                <label class="form-label fw-bold" style="font-size:.85rem">التشخيص *</label>
+                <textarea name="diagnostic" class="form-control" rows="3" required
+                  placeholder="أدخل التشخيص الطبي...">{% if rdv.ordonnance %}{{ rdv.ordonnance.diagnostic }}{% endif %}</textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold" style="font-size:.85rem">الوصفة الطبية *</label>
+                <textarea name="prescription" class="form-control" rows="5" required
+                  placeholder="دواء - الجرعة - المدة&#10;دواء - الجرعة - المدة...">{% if rdv.ordonnance %}{{ rdv.ordonnance.prescription }}{% endif %}</textarea>
+              </div>
+              <div class="mb-4">
+                <label class="form-label fw-bold" style="font-size:.85rem">ملاحظات إضافية</label>
+                <textarea name="notes_medecin" class="form-control" rows="2"
+                  placeholder="توصيات، متابعة، إجراءات...">{% if rdv.ordonnance %}{{ rdv.ordonnance.notes_medecin }}{% endif %}</textarea>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 py-2">
+                <i class="fas fa-file-prescription me-2"></i>
+                {% if rdv.ordonnance %}تحديث الوصفة{% else %}حفظ الوصفة وإتمام الموعد{% endif %}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Historique ordonnances du même patient -->
+        {% with hist=rdv.patient.profil.ordonnances.all %}
+        {% if hist.count > 1 %}
+        <div class="section-card">
+          <div class="section-header"><i class="fas fa-history me-2 text-primary"></i>وصفات سابقة لهذا المريض</div>
+          <div class="card-body p-0">
+            {% for o in hist|slice:":4" %}
+            {% if o.rdv != rdv %}
+            <div class="p-3" style="border-bottom:1px solid #f0f4ff;font-size:.83rem">
+              <div class="d-flex justify-content-between">
+                <strong>{{ o.medecin }}</strong>
+                <small class="text-muted">{{ o.cree_le|date:"Y/m/d" }}</small>
+              </div>
+              <div class="text-muted mt-1">{{ o.diagnostic|truncatechars:80 }}</div>
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

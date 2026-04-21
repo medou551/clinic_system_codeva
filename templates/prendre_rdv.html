@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load clinic_extras %}
+{% block title %}حجز موعد — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.page-header{background:linear-gradient(135deg,#0d5aa7,#1a6fc4);color:#fff;padding:50px 0 35px}
+.step-badge{background:#e8f0fe;color:#1a6fc4;border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:.82rem;margin-left:8px;flex-shrink:0}
+.rdv-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(26,111,196,.1);overflow:hidden}
+.rdv-card-header{background:linear-gradient(135deg,#17c3b2,#0d9e90);color:#fff;padding:16px 22px}
+.form-control,.form-select{border-radius:10px;border:1.5px solid #e2e8f0;font-size:.92rem;padding:10px 14px;transition:border .2s;font-family:inherit}
+.form-control:focus,.form-select:focus{border-color:#1a6fc4;box-shadow:0 0 0 3px rgba(26,111,196,.1)}
+.btn-book{background:linear-gradient(135deg,#1a6fc4,#0d5aa7);border:none;border-radius:12px;font-size:1rem;font-weight:800;padding:13px;transition:all .3s}
+.btn-book:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(26,111,196,.35)}
+.spec-pill{border-radius:20px;font-size:.82rem;padding:6px 16px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;transition:all .2s}
+.spec-pill:hover,.spec-pill.active{background:#1a6fc4;color:#fff;border-color:#1a6fc4}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h2 class="fw-bold mb-1"><i class="fas fa-calendar-plus me-2"></i>حجز موعد</h2>
+    <nav><ol class="breadcrumb mb-0 opacity-75">
+      <li class="breadcrumb-item"><a href="{% url 'accueil' %}" class="text-white-50">الرئيسية</a></li>
+      <li class="breadcrumb-item active text-white">حجز موعد</li>
+    </ol></nav>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="rdv-card">
+        <div class="rdv-card-header"><h5 class="fw-bold mb-0"><i class="fas fa-calendar-check me-2"></i>تفاصيل الموعد</h5></div>
+        <div class="p-4">
+          
+            <div class="alert alert-light border rounded-4 mb-3">
+              <div class="fw-bold mb-2">ملخص توفر اليوم</div>
+              <div class="row g-2">
+                {% for item in disponibilites_resume %}
+                <div class="col-md-6">
+                  <div class="border rounded-3 p-2 small">
+                    <div class="fw-bold">{{ item.medecin }}</div>
+                    <div class="text-muted">المتبقي اليوم: {{ item.remaining }} / {{ item.capacity }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="mt-3">
+                <a href="{% url 'patient_liste_attente' %}" class="btn btn-outline-warning btn-sm">الانتقال إلى قائمة الانتظار</a>
+              </div>
+            </div>
+
+          <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label class="form-label fw-bold d-flex align-items-center"><span class="step-badge">١</span>التخصص (للتصفية)</label>
+              <select id="filtre-spec" class="form-select">
+                <option value="">-- جميع التخصصات --</option>
+                {% for sp in specialites %}
+                <option value="{{ sp.id }}" {% if spec_choisie == sp.id|stringformat:"s" %}selected{% endif %}>
+                  <i class="fas {{ sp.icone }}"></i> {{ sp.nom }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold d-flex align-items-center"><span class="step-badge">٢</span>الطبيب *</label>
+              <select name="medecin" id="med-sel" class="form-select" required>
+                <option value="">-- اختر طبيباً --</option>
+                {% for d in medecins %}
+                <option value="{{ d.id }}" data-spec="{{ d.specialite_id }}"
+                  {% if med_preselect == d.id|stringformat:"s" %}selected{% endif %}>
+                  {{ d }} — {{ d.specialite }} ({{ d.annees_experience }} سنة خبرة)
+                </option>
+                {% endfor %}
+              </select>
+              {% if not medecins %}
+              <div class="alert alert-warning mt-2 py-2" style="border-radius:10px;font-size:.82rem">
+                لا يوجد أطباء متاحون لهذا التخصص
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold d-flex align-items-center"><span class="step-badge">٣</span>الخدمة *</label>
+              <select name="service" id="service-sel" class="form-select" required>
+                <option value="">-- اختر الخدمة --</option>
+              </select>
+              <div class="form-text">لن تظهر إلا الخدمات المسموح بها للطبيب المختار.</div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-bold d-flex align-items-center"><span class="step-badge">٤</span>التاريخ *</label>
+                <input type="date" name="date" id="date-inp" class="form-control" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-bold d-flex align-items-center"><span class="step-badge">٥</span>الوقت *</label>
+                <select name="heure" class="form-select" required>
+                  <option value="">-- الوقت --</option>
+                  {% for h in "08:00,08:30,09:00,09:30,10:00,10:30,11:00,11:30,14:00,14:30,15:00,15:30,16:00,16:30,17:00,17:30"|split:"," %}
+                  <option value="{{ h }}">{{ h }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold d-flex align-items-center"><span class="step-badge">٦</span>سبب الزيارة</label>
+              <textarea name="motif" class="form-control" rows="3" placeholder="صف باختصار شكواك..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-book btn-primary w-100">
+              <i class="fas fa-check-circle me-2"></i>تأكيد الحجز
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+const CRENEAUX_PRIS = {{ creneaux_pris_json|safe }};
+const SERVICES_BY_MEDECIN = {{ services_by_medecin_json|safe }};
+const TOUTES_HEURES = ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30"];
+
+const d = document.getElementById('date-inp');
+if(d){ const t=new Date().toISOString().split('T')[0]; d.min=t; d.value=t; }
+
+document.getElementById('filtre-spec').addEventListener('change', function(){
+  const sid = this.value;
+  const sel = document.getElementById('med-sel');
+  Array.from(sel.options).forEach(o=>{ if(!o.value)return; o.hidden = sid && o.dataset.spec!==sid; });
+  sel.value='';
+  updateServices();
+  updateServices();
+updateCreneaux();
+});
+
+function updateServices(){
+  const mid = document.getElementById('med-sel').value;
+  const serviceSel = document.getElementById('service-sel');
+  const items = SERVICES_BY_MEDECIN[mid] || [];
+  serviceSel.innerHTML = '<option value="">-- اختر الخدمة --</option>';
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.nom;
+    serviceSel.appendChild(opt);
+  });
+}
+
+function updateCreneaux(){
+  const mid  = document.getElementById('med-sel').value;
+  const date = document.getElementById('date-inp').value;
+  const sel  = document.querySelector('select[name="heure"]');
+  if(!sel) return;
+  const pris = (CRENEAUX_PRIS[mid] && CRENEAUX_PRIS[mid][date]) ? CRENEAUX_PRIS[mid][date] : [];
+  Array.from(sel.options).forEach(o=>{
+    if(!o.value) return;
+    const estPris = pris.includes(o.value);
+    o.disabled = estPris;
+    o.text = estPris ? o.value + ' — محجوز ✗' : o.value;
+    o.style.color = estPris ? '#ef4444' : '';
+    if(estPris && sel.value === o.value) sel.value = '';
+  });
+  // Show availability badge
+  const avail = TOUTES_HEURES.length - pris.length;
+  let badge = document.getElementById('avail-badge');
+  if(!badge){ badge = document.createElement('div'); badge.id='avail-badge'; sel.parentNode.appendChild(badge); }
+  if(mid && date){
+    badge.className = avail > 0 ? 'alert alert-success py-1 mt-2' : 'alert alert-danger py-1 mt-2';
+    badge.style.cssText = 'font-size:.8rem;border-radius:10px;padding:5px 12px;margin-top:6px';
+    badge.innerHTML = avail > 0
+      ? `<i class="fas fa-circle-check me-1"></i>${avail} فترة متاحة`
+      : `<i class="fas fa-ban me-1"></i>لا توجد فترات متاحة — اختر تاريخاً آخر`;
+  } else { badge.innerHTML=''; }
+}
+
+document.getElementById('med-sel').addEventListener('change', function(){ updateServices(); updateServices();
+updateCreneaux(); });
+document.getElementById('date-inp').addEventListener('change', updateCreneaux);
+updateServices();
+updateCreneaux();
+</script>
+{% endblock %}

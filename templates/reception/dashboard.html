@@ -1,0 +1,158 @@
+{% extends 'reception/base_reception.html' %}
+{% block title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h5><i class="fas fa-chart-bar me-2"></i>لوحة التحكم</h5>
+    <div class="sub">{{ today }} — نظرة عامة على العيادة</div>
+  </div>
+  <a href="{% url 'reception_rdv_nouveau' %}" class="btn btn-primary btn-sm px-3">
+    <i class="fas fa-plus me-1"></i>موعد جديد
+  </a>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg">
+    <div class="sc blue text-center">
+      <div class="num">{{ stats.rdv_today }}</div>
+      <div class="lbl"><i class="fas fa-calendar-day me-1"></i>مواعيد اليوم</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc orange text-center">
+      <div class="num">{{ stats.rdv_attente }}</div>
+      <div class="lbl"><i class="fas fa-clock me-1"></i>في الانتظار</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc green text-center">
+      <div class="num">{{ stats.rdv_confirme }}</div>
+      <div class="lbl"><i class="fas fa-check me-1"></i>مؤكدة</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc purple text-center">
+      <div class="num">{{ stats.nb_patients }}</div>
+      <div class="lbl"><i class="fas fa-users me-1"></i>المرضى</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="sc green text-center">
+      <div class="num">{{ stats.nb_medecins }}</div>
+      <div class="lbl"><i class="fas fa-user-md me-1"></i>الأطباء</div>
+    </div>
+  </div>
+</div>
+
+<!-- Revenus (chargés en AJAX) -->
+<div class="row g-3 mb-4" id="revenus-row" style="display:none!important">
+  <div class="col-12"><h6 class="text-muted" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.05em"><i class="fas fa-coins me-1"></i>الإيرادات المحصلة</h6></div>
+  <div class="col-4">
+    <div class="sc green text-center">
+      <div class="num" id="rev-consult">—</div>
+      <div class="lbl">استشارات</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="sc blue text-center">
+      <div class="num" id="rev-analyse">—</div>
+      <div class="lbl">تحاليل</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="sc orange text-center">
+      <div class="num" id="rev-total">—</div>
+      <div class="lbl">الإجمالي</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- مواعيد اليوم -->
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-calendar-day me-2" style="color:#1a6fc4"></i>مواعيد اليوم</span>
+        <span class="badge rounded-pill" style="background:#e8f0fe;color:#1a6fc4">{{ rdvs_today.count }}</span>
+      </div>
+      <div class="card-body p-0">
+        {% if rdvs_today %}
+        <table class="table mb-0">
+          <thead><tr><th>الوقت</th><th>المريض</th><th>الطبيب</th><th>الحالة</th><th>تغيير</th></tr></thead>
+          <tbody>
+            {% for rdv in rdvs_today %}
+            <tr>
+              <td><strong style="color:#1a6fc4">{{ rdv.heure|time:"H:i" }}</strong></td>
+              <td>{{ rdv.patient.get_full_name|default:rdv.patient.username }}</td>
+              <td><small>{{ rdv.medecin }}</small></td>
+              <td><span class="st-badge st-{{ rdv.statut }}">{{ rdv.get_statut_display }}</span></td>
+              <td>
+                <form method="POST" action="{% url 'reception_rdv_statut' rdv.pk %}">
+                  {% csrf_token %}
+                  <select name="statut" class="form-select form-select-sm" style="width:120px;font-size:.75rem" onchange="this.form.submit()">
+                   {% for val,lbl in rdv.STATUTS %}
+        <option value="{{ val }}"{% if rdv.statut == val %} selected{% endif %}>{{ lbl }}
+        </option>
+    {% endfor %}
+</select>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="fas fa-calendar-times fa-2x mb-3 d-block" style="color:#d1d5db"></i>
+          <p class="mb-2">لا توجد مواعيد اليوم</p>
+          <a href="{% url 'reception_rdv_nouveau' %}" class="btn btn-sm btn-primary px-3">إنشاء موعد</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- مواعيد قادمة + الأطباء -->
+  <div class="col-lg-5">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-calendar-week me-2" style="color:#17c3b2"></i>مواعيد قادمة</span>
+        <a href="{% url 'reception_rdv' %}" style="font-size:.75rem;color:#1a6fc4;text-decoration:none">عرض الكل ←</a>
+      </div>
+      <div class="card-body p-0">
+        {% if rdvs_semaine %}
+        <table class="table mb-0">
+          <thead><tr><th>التاريخ</th><th>المريض</th><th>الحالة</th></tr></thead>
+          <tbody>
+            {% for rdv in rdvs_semaine %}
+            <tr>
+              <td><strong>{{ rdv.date }}</strong><br><small class="text-muted">{{ rdv.heure|time:"H:i" }}</small></td>
+              <td style="font-size:.8rem">{{ rdv.patient.get_full_name|default:rdv.patient.username }}</td>
+              <td><span class="st-badge st-{{ rdv.statut }}">{{ rdv.get_statut_display }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-3 text-muted" style="font-size:.83rem">لا توجد مواعيد قادمة</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+fetch("{% url 'reception_stats_revenus' %}")
+  .then(r=>r.json())
+  .then(d=>{
+    document.getElementById('rev-consult').textContent = d.consultations.toLocaleString() + ' MRU';
+    document.getElementById('rev-analyse').textContent  = d.analyses.toLocaleString() + ' MRU';
+    document.getElementById('rev-total').textContent    = d.total.toLocaleString() + ' MRU';
+    document.getElementById('revenus-row').style.removeProperty('display');
+  }).catch(()=>{});
+</script>
+{% endblock %}

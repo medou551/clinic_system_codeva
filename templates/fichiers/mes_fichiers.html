@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}ملفاتي الطبية{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="mb-1">ملفاتي الطبية</h2>
+      <p class="text-muted mb-0">كل الملفات الطبية الخاصة بك في مكان واحد.</p>
+    </div>
+    <a href="{% url 'medical_file_upload' %}" class="btn btn-primary rounded-pill px-4">
+      <i class="fas fa-upload me-1"></i>رفع ملف جديد
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+      {% if pieces %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>العنوان</th>
+              <th>النوع</th>
+              <th>التاريخ</th>
+              <th>الحجم</th>
+              <th class="text-center">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for piece in pieces %}
+            <tr>
+              <td>
+                <div class="fw-bold">{{ piece.titre }}</div>
+                {% if piece.description %}<div class="text-muted small">{{ piece.description|truncatechars:90 }}</div>{% endif %}
+              </td>
+              <td>{{ piece.get_type_piece_display }}</td>
+              <td>{{ piece.cree_le|date:"Y/m/d H:i" }}</td>
+              <td>{{ piece.taille_octets|filesizeformat }}</td>
+              <td class="text-center">
+                <a href="{% url 'medical_file_download' piece.id %}" class="btn btn-sm btn-outline-primary">تحميل</a>
+                <form method="post" action="{% url 'medical_file_delete' piece.id %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('تأكيد حذف الملف؟')">حذف</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-muted">لا توجد ملفات طبية حالياً.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

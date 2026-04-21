@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}قائمة الانتظار{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h3 class="fw-bold mb-1">قائمة الانتظار</h3>
+      <div class="text-muted">يمكنك طلب إشعار غير مباشر عند عدم توفر موعد مناسب</div>
+    </div>
+    <a href="{% url 'prendre_rdv' %}" class="btn btn-outline-primary">العودة إلى الحجز</a>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">إضافة طلب انتظار</h5>
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label">الطبيب</label>
+              <select name="medecin" class="form-select" required>
+                <option value="">-- اختر الطبيب --</option>
+                {% for med in medecins %}
+                <option value="{{ med.id }}">{{ med }} — {{ med.specialite }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">التاريخ المرغوب</label>
+              <input type="date" name="date_souhaitee" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">ملاحظات</label>
+              <textarea name="notes" class="form-control" rows="3" placeholder="مثال: أفضل الفترة الصباحية"></textarea>
+            </div>
+            <button class="btn btn-primary w-100">إضافة إلى قائمة الانتظار</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">طلباتي</h5>
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead><tr><th>الطبيب</th><th>التاريخ</th><th>الحالة</th><th></th></tr></thead>
+              <tbody>
+                {% for e in entrees %}
+                <tr>
+                  <td>{{ e.medecin }}<div class="text-muted small">{{ e.medecin.specialite }}</div></td>
+                  <td>{{ e.date_souhaitee|date:"Y-m-d" }}</td>
+                  <td>{{ e.get_statut_display }}</td>
+                  <td>
+                    {% if e.statut == 'en_attente' %}
+                    <a href="{% url 'patient_liste_attente_annuler' e.id %}" class="btn btn-sm btn-outline-danger">إلغاء</a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-muted py-4">لا توجد طلبات انتظار حالياً</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

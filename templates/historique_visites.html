@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}تاريخ زياراتي — العيادة الطبية{% endblock %}
+{% block css %}
+<style>
+.page-header{background:linear-gradient(135deg,#1a6fc4,#17c3b2);color:#fff;padding:32px 0;margin-bottom:30px}
+.page-header h1{font-size:1.6rem;font-weight:700}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:#fff;border-radius:14px;padding:18px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.stat-num{font-size:2rem;font-weight:800;line-height:1}
+.stat-lbl{font-size:.8rem;color:#6c757d;margin-top:4px}
+.filters{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:22px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.filters select,.filters input{border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:.88rem;color:#333}
+.rdv-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px;overflow:hidden;border-right:4px solid #dee2e6}
+.rdv-card.termine{border-right-color:#17c3b2}
+.rdv-card.annule{border-right-color:#dc3545}
+.rdv-card.confirme{border-right-color:#1a6fc4}
+.rdv-card.attente{border-right-color:#ffc107}
+.rdv-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #f0f4ff}
+.rdv-date{font-weight:700;font-size:1rem;color:#1a6fc4}
+.rdv-body{padding:14px 18px;display:flex;gap:16px;flex-wrap:wrap}
+.rdv-info{flex:1;min-width:200px}
+.rdv-info .label{font-size:.78rem;color:#6c757d;margin-bottom:2px}
+.rdv-info .val{font-weight:600;font-size:.9rem}
+.badge-statut{border-radius:10px;padding:4px 12px;font-size:.78rem;font-weight:700}
+.bs-termine{background:#e8f8f5;color:#0f6e56}
+.bs-annule{background:#fef0f0;color:#b91c1c}
+.bs-confirme{background:#e8f4fd;color:#1a6fc4}
+.bs-attente{background:#fffbeb;color:#92400e}
+.rdv-footer{padding:10px 18px;background:#f8fafc;display:flex;gap:10px;flex-wrap:wrap}
+.ordo-section{background:#fff;border-radius:14px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-top:28px}
+.ordo-card{border:1.5px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:10px}
+.ordo-header{display:flex;justify-content:space-between;margin-bottom:8px}
+.empty{text-align:center;padding:40px;color:#adb5bd}
+.section-title{font-size:1.1rem;font-weight:700;color:#2d3748;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e8f4fd}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1><i class="fas fa-history me-2"></i>تاريخ زياراتي</h1>
+    <p style="opacity:.85;margin:0">سجل كامل بجميع مواعيدك وزياراتك الطبية</p>
+  </div>
+</div>
+<div class="container">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" style="color:#1a6fc4">{{ stats.total }}</div><div class="stat-lbl">إجمالي المواعيد</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#17c3b2">{{ stats.termine }}</div><div class="stat-lbl">زيارات مكتملة</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#ffc107">{{ stats.a_venir }}</div><div class="stat-lbl">مواعيد قادمة</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#dc3545">{{ stats.annule }}</div><div class="stat-lbl">ملغية</div></div>
+  </div>
+
+  <div class="filters">
+    <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%">
+      <select name="statut" onchange="this.form.submit()">
+        <option value="">-- كل الحالات --</option>
+        <option value="termine" {% if filtre_statut == 'termine' %}selected{% endif %}>مكتملة</option>
+        <option value="confirme" {% if filtre_statut == 'confirme' %}selected{% endif %}>مؤكدة</option>
+        <option value="attente" {% if filtre_statut == 'attente' %}selected{% endif %}>في الانتظار</option>
+        <option value="annule" {% if filtre_statut == 'annule' %}selected{% endif %}>ملغية</option>
+      </select>
+      <select name="medecin" onchange="this.form.submit()">
+        <option value="">-- كل الأطباء --</option>
+        {% for m in medecins_vus %}
+        <option value="{{ m.id }}" {% if filtre_medecin == m.id|stringformat:'s' %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+      {% if filtre_statut or filtre_medecin %}
+      <a href="{% url 'historique_visites' %}" class="btn btn-sm btn-outline-secondary">إلغاء الفلتر</a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if not rdvs %}
+  <div class="empty"><i class="fas fa-calendar-times fa-3x mb-3"></i><p>لا توجد مواعيد</p></div>
+  {% endif %}
+
+  {% for rdv in rdvs %}
+  <div class="rdv-card {{ rdv.statut }}">
+    <div class="rdv-header">
+      <div class="rdv-date"><i class="fas fa-calendar me-2"></i>{{ rdv.date|date:"d/m/Y" }} — {{ rdv.heure|time:"H:i" }}</div>
+      <span class="badge-statut
+        {% if rdv.statut == 'termine' %}bs-termine
+        {% elif rdv.statut == 'annule' %}bs-annule
+        {% elif rdv.statut == 'confirme' %}bs-confirme
+        {% else %}bs-attente{% endif %}">
+        {{ rdv.get_statut_display }}
+      </span>
+    </div>
+    <div class="rdv-body">
+      <div class="rdv-info">
+        <div class="label">الطبيب</div>
+        <div class="val">{{ rdv.medecin }}</div>
+      </div>
+      <div class="rdv-info">
+        <div class="label">التخصص</div>
+        <div class="val">{{ rdv.medecin.specialite|default:"—" }}</div>
+      </div>
+      {% if rdv.motif %}
+      <div class="rdv-info" style="flex-basis:100%">
+        <div class="label">سبب الزيارة</div>
+        <div class="val">{{ rdv.motif }}</div>
+      </div>
+      {% endif %}
+      {% if rdv.notes %}
+      <div class="rdv-info" style="flex-basis:100%;background:#f0f9ff;border-radius:8px;padding:10px">
+        <div class="label"><i class="fas fa-stethoscope me-1"></i>ملاحظات الطبيب</div>
+        <div class="val" style="font-weight:400;font-size:.88rem">{{ rdv.notes }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% if rdv.statut == 'termine' %}
+    <div class="rdv-footer">
+      {% if rdv.ordonnance %}
+      <a href="{% url 'medecin_ordonnance_print' rdv.ordonnance.id %}" class="btn btn-sm btn-outline-primary" style="border-radius:8px">
+        <i class="fas fa-prescription me-1"></i>عرض الوصفة
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  {% if ordonnances %}
+  <div class="ordo-section">
+    <div class="section-title"><i class="fas fa-prescription me-2"></i>وصفاتي الطبية ({{ ordonnances|length }})</div>
+    {% for o in ordonnances %}
+    <div class="ordo-card">
+      <div class="ordo-header">
+        <strong>{{ o.medecin }}</strong>
+        <span style="font-size:.82rem;color:#6c757d">{{ o.cree_le|date:"d/m/Y" }}</span>
+      </div>
+      <div style="font-size:.88rem;color:#444"><strong>التشخيص:</strong> {{ o.diagnostic }}</div>
+      <div style="font-size:.83rem;color:#6c757d;margin-top:4px">{{ o.prescription|truncatechars:120 }}</div>
+      <div style="margin-top:8px">
+        <a href="{% url 'medecin_ordonnance_print' o.id %}" class="btn btn-sm btn-outline-primary" style="border-radius:8px;font-size:.8rem">
+          <i class="fas fa-print me-1"></i>طباعة
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

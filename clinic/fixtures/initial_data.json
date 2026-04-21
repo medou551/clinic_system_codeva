@@ -1,0 +1,464 @@
+[
+{
+  "model": "clinic.specialite",
+  "pk": 1,
+  "fields": {
+    "nom": "طب الأسنان",
+    "icone": "fa-tooth",
+    "description": "علاج جميع مشاكل الأسنان والفم"
+  }
+},
+{
+  "model": "clinic.specialite",
+  "pk": 2,
+  "fields": {
+    "nom": "طب الأطفال",
+    "icone": "fa-baby",
+    "description": "رعاية صحية متخصصة للأطفال"
+  }
+},
+{
+  "model": "clinic.specialite",
+  "pk": 3,
+  "fields": {
+    "nom": "أمراض القلب",
+    "icone": "fa-heartbeat",
+    "description": "تشخيص وعلاج أمراض القلب والأوعية الدموية"
+  }
+},
+{
+  "model": "clinic.specialite",
+  "pk": 4,
+  "fields": {
+    "nom": "طب العيون",
+    "icone": "fa-eye",
+    "description": "فحص وعلاج أمراض العيون"
+  }
+},
+{
+  "model": "clinic.specialite",
+  "pk": 5,
+  "fields": {
+    "nom": "العظام والمفاصل",
+    "icone": "fa-bone",
+    "description": "علاج أمراض الجهاز الحركي"
+  }
+},
+{
+  "model": "clinic.specialite",
+  "pk": 6,
+  "fields": {
+    "nom": "الأمراض الجلدية",
+    "icone": "fa-hand-holding-medical",
+    "description": "تشخيص وعلاج أمراض الجلد"
+  }
+},
+{
+  "model": "clinic.service",
+  "pk": 1,
+  "fields": {
+    "nom": "فحص الأسنان",
+    "description": "فحص شامل لأسنانك وتشخيص دقيق لأي مشاكل",
+    "icone": "fa-tooth",
+    "prix": "500.00",
+    "duree": 30,
+    "capacite_par_creneau": 1,
+    "actif": true
+  }
+},
+{
+  "model": "clinic.service",
+  "pk": 2,
+  "fields": {
+    "nom": "تنظيف الأسنان",
+    "description": "إزالة الجير والتلوين للحصول على أسنان أكثر بياضاً",
+    "icone": "fa-smile",
+    "prix": "800.00",
+    "duree": 30,
+    "capacite_par_creneau": 1,
+    "actif": true
+  }
+},
+{
+  "model": "clinic.service",
+  "pk": 3,
+  "fields": {
+    "nom": "فحص الأطفال",
+    "description": "فحص دوري شامل لمتابعة نمو وصحة الأطفال",
+    "icone": "fa-baby",
+    "prix": "600.00",
+    "duree": 30,
+    "capacite_par_creneau": 1,
+    "actif": true
+  }
+},
+{
+  "model": "clinic.service",
+  "pk": 4,
+  "fields": {
+    "nom": "تخطيط القلب",
+    "description": "فحص نشاط القلب الكهربائي وتشخيص الاضطرابات",
+    "icone": "fa-heartbeat",
+    "prix": "1200.00",
+    "duree": 30,
+    "capacite_par_creneau": 1,
+    "actif": true
+  }
+},
+{
+  "model": "clinic.service",
+  "pk": 5,
+  "fields": {
+    "nom": "فحص العيون",
+    "description": "قياس النظر وفحص شامل لصحة العيون",
+    "icone": "fa-eye",
+    "prix": "700.00",
+    "duree": 30,
+    "capacite_par_creneau": 1,
+    "actif": true
+  }
+},
+{
+  "model": "clinic.service",
+  "pk": 6,
+  "fields": {
+    "nom": "علاج العظام",
+    "description": "تشخيص وعلاج مشاكل العظام والمفاصل",
+    "icone": "fa-bone",
+    "prix": "1000.00",
+    "duree": 30,
+    "capacite_par_creneau": 1,
+    "actif": true
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 1,
+  "fields": {
+    "nom": "NFS",
+    "description": "تعداد الدم الكامل",
+    "prix": "500.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.103Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 2,
+  "fields": {
+    "nom": "Glycémie",
+    "description": "تحليل السكر في الدم",
+    "prix": "300.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.104Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 3,
+  "fields": {
+    "nom": "Créatinine",
+    "description": "تحليل وظائف الكلى",
+    "prix": "400.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.105Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 4,
+  "fields": {
+    "nom": "Urée",
+    "description": "تحليل اليوريا",
+    "prix": "350.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.106Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 5,
+  "fields": {
+    "nom": "Bilan lipidique",
+    "description": "تحليل الدهون",
+    "prix": "800.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.106Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 6,
+  "fields": {
+    "nom": "ASAT / ALAT",
+    "description": "تحليل الكبد",
+    "prix": "700.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.107Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 7,
+  "fields": {
+    "nom": "CRP",
+    "description": "مؤشر الالتهاب",
+    "prix": "450.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.108Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 8,
+  "fields": {
+    "nom": "Groupage sanguin",
+    "description": "فصيلة الدم",
+    "prix": "600.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.109Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 9,
+  "fields": {
+    "nom": "Examen d’urines",
+    "description": "تحليل البول",
+    "prix": "300.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.109Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 10,
+  "fields": {
+    "nom": "TSH",
+    "description": "تحليل الغدة الدرقية",
+    "prix": "900.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.110Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 11,
+  "fields": {
+    "nom": "Vitamine D",
+    "description": "قياس مستوى فيتامين د",
+    "prix": "750.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.130Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 12,
+  "fields": {
+    "nom": "Ferritine",
+    "description": "تحليل مخزون الحديد",
+    "prix": "600.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.132Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 13,
+  "fields": {
+    "nom": "HbA1c",
+    "description": "تحليل السكر التراكمي",
+    "prix": "700.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.133Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 14,
+  "fields": {
+    "nom": "TP / INR",
+    "description": "تحليل تخثر الدم",
+    "prix": "500.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.134Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 15,
+  "fields": {
+    "nom": "Ionogramme",
+    "description": "تحليل الأملاح المعدنية",
+    "prix": "650.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.134Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 16,
+  "fields": {
+    "nom": "PSA",
+    "description": "تحليل بروستاتا",
+    "prix": "800.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.135Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 17,
+  "fields": {
+    "nom": "Beta HCG",
+    "description": "تحليل الحمل",
+    "prix": "350.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.136Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 18,
+  "fields": {
+    "nom": "Sérologie HIV",
+    "description": "تحليل فيروس نقص المناعة",
+    "prix": "1000.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.137Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 19,
+  "fields": {
+    "nom": "Hépatite B",
+    "description": "تحليل التهاب الكبد B",
+    "prix": "900.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.138Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 20,
+  "fields": {
+    "nom": "Hépatite C",
+    "description": "تحليل التهاب الكبد C",
+    "prix": "900.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.139Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 21,
+  "fields": {
+    "nom": "ECBU",
+    "description": "تحليل البول الكامل بمزرعة",
+    "prix": "450.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.140Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 22,
+  "fields": {
+    "nom": "Spermiogramme",
+    "description": "تحليل السائل المنوي",
+    "prix": "1200.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.141Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 23,
+  "fields": {
+    "nom": "Frottis sanguin",
+    "description": "فحص لطاخة الدم",
+    "prix": "400.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.141Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 24,
+  "fields": {
+    "nom": "Calcium / Phosphore",
+    "description": "تحليل الكالسيوم والفسفور",
+    "prix": "500.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.142Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 25,
+  "fields": {
+    "nom": "Acide urique",
+    "description": "تحليل حمض اليوريك",
+    "prix": "350.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.143Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 26,
+  "fields": {
+    "nom": "Albumine",
+    "description": "تحليل الألبومين",
+    "prix": "400.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.144Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 27,
+  "fields": {
+    "nom": "Bilirubine",
+    "description": "تحليل الصفراء",
+    "prix": "500.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.145Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 28,
+  "fields": {
+    "nom": "Progestérone",
+    "description": "تحليل هرمون البروجسترون",
+    "prix": "800.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.145Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 29,
+  "fields": {
+    "nom": "Testostérone",
+    "description": "تحليل هرمون التستوستيرون",
+    "prix": "800.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.146Z"
+  }
+},
+{
+  "model": "clinic.analyse",
+  "pk": 30,
+  "fields": {
+    "nom": "Cortisol",
+    "description": "تحليل هرمون الكورتيزول",
+    "prix": "900.00",
+    "actif": true,
+    "cree_le": "2026-04-13T20:17:42.147Z"
+  }
+}
+]

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}دوسيه — {{ patient }}{% endblock %}
+{% block css %}
+<style>
+.doc-header{background:linear-gradient(135deg,#0d5aa7,#1a6fc4,#17c3b2);color:#fff;padding:32px 0 24px}
+.doc-header h2{font-size:1.3rem;font-weight:900;margin:0}
+.section-card{border:none;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,.07);margin-bottom:20px;overflow:hidden}
+.section-header{padding:12px 18px;font-weight:800;font-size:.9rem;border-bottom:2px solid #f0f4ff;background:#f8faff}
+.st-badge{border-radius:20px;padding:3px 10px;font-size:.73rem;font-weight:700}
+.st-attente{background:#fff3cd;color:#856404}.st-confirme{background:#d1fae5;color:#065f46}
+.st-annule{background:#fee2e2;color:#991b1b}.st-termine{background:#e5e7eb;color:#374151}
+.st-payee{background:#dbeafe;color:#1e40af}.st-prete{background:#dcfce7;color:#166534}
+</style>
+{% endblock %}
+{% block content %}
+<div class="doc-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <a href="{% url 'medecin_dashboard' %}" class="btn btn-light btn-sm rounded-pill px-3" style="color:#1a6fc4">
+        <i class="fas fa-arrow-right me-1"></i>رجوع
+      </a>
+      <div style="width:50px;height:50px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem">
+        <i class="fas fa-user"></i>
+      </div>
+      <div>
+        <h2>{{ patient.utilisateur.first_name }} {{ patient.utilisateur.last_name }}</h2>
+        {% if has_shared_access and share_access %}
+        <div class="mt-2 small">
+          <span class="badge bg-info text-dark">وصول مشترك</span>
+          {% if share_access.lecture_seule %}<span class="badge bg-secondary">قراءة فقط</span>{% endif %}
+          {% if share_access.peut_ajouter_notes %}<span class="badge bg-success">ملاحظات</span>{% endif %}
+          {% if share_access.peut_ajouter_fichiers %}<span class="badge bg-primary">ملفات</span>{% endif %}
+          {% if share_access.peut_creer_ordonnance %}<span class="badge bg-warning text-dark">وصفة</span>{% endif %}
+        </div>
+        {% endif %}
+        <p style="opacity:.8;margin:4px 0 0;font-size:.85rem">
+          {% if patient.telephone %}📞 {{ patient.telephone }}{% endif %}
+          {% if patient.age %} — {{ patient.age }} سنة{% endif %}
+          {% if patient.genre %} — {{ patient.get_genre_display }}{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="py-4">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Colonne gauche : RDV + Actions -->
+      <div class="col-lg-5">
+
+        <div class="section-card">
+          <div class="section-header"><i class="fas fa-calendar me-2 text-primary"></i>المواعيد ({{ rdvs.count }})</div>
+          <div class="card-body p-0">
+            {% for r in rdvs %}
+            <div class="d-flex align-items-center gap-3 px-3 py-2" style="border-bottom:1px solid #f0f4ff">
+              <div style="min-width:50px;text-align:center">
+                <div style="font-size:1.2rem;font-weight:900;color:#1a6fc4;line-height:1">{{ r.date|date:"d" }}</div>
+                <div style="font-size:.65rem;color:#888">{{ r.date|date:"M Y" }}</div>
+              </div>
+              <div class="flex-grow-1">
+                <div style="font-size:.82rem;font-weight:600">{{ r.heure|time:"H:i" }}
+                  {% if r.motif %}<span class="text-muted fw-normal"> — {{ r.motif|truncatechars:30 }}</span>{% endif %}
+                </div>
+                <div class="mt-1">
+                  <span class="st-badge st-{{ r.statut }}">{{ r.get_statut_display }}</span>
+                  {% if r.statut == 'confirme' or r.statut == 'attente' %}
+                  <a href="{% url 'medecin_rdv_notes' r.id %}" class="btn btn-sm btn-outline-primary ms-1" style="font-size:.7rem;padding:2px 8px">
+                    <i class="fas fa-edit"></i> وصفة
+                  </a>
+                  <a href="{% url 'medecin_transfert' r.id %}" class="btn btn-sm btn-outline-warning ms-1" style="font-size:.7rem;padding:2px 8px">
+                    <i class="fas fa-exchange-alt"></i>
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-3 text-muted" style="font-size:.83rem">لا توجد مواعيد</div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Colonne droite : Ordonnances + Analyses -->
+      <div class="col-lg-7">
+
+        <!-- Ordonnances -->
+        <div class="section-card">
+          <div class="section-header"><i class="fas fa-file-prescription me-2 text-primary"></i>الوصفات الطبية ({{ ordonnances.count }})</div>
+          <div class="card-body p-0">
+            {% for o in ordonnances %}
+            <div class="p-3" style="border-bottom:1px solid #f0f4ff">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <div style="font-size:.82rem;font-weight:700">{{ o.cree_le|date:"Y/m/d" }}</div>
+                  <div style="font-size:.75rem;color:#888">{{ o.rdv.date }} {{ o.rdv.heure|time:"H:i" }}</div>
+                </div>
+                <a href="{% url 'medecin_ordonnance_print' o.id %}" class="btn btn-sm btn-outline-secondary" style="font-size:.72rem" target="_blank">
+                  <i class="fas fa-print me-1"></i>طباعة
+                </a>
+              </div>
+              <div style="background:#f0fdf4;border-radius:8px;padding:8px 12px;font-size:.82rem;margin-bottom:6px">
+                <strong>التشخيص:</strong> {{ o.diagnostic|truncatechars:100 }}
+              </div>
+              <div style="background:#eff6ff;border-radius:8px;padding:8px 12px;font-size:.82rem;white-space:pre-line">
+                <strong>الوصفة:</strong> {{ o.prescription|truncatechars:150 }}
+              </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-3 text-muted" style="font-size:.83rem">لا توجد وصفات</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Analyses -->
+        {% if demandes %}
+        <div class="section-card">
+          <div class="section-header"><i class="fas fa-vials me-2 text-primary"></i>التحاليل ({{ demandes.count }})</div>
+          <div class="card-body p-0">
+            {% for d in demandes %}
+            <div class="d-flex align-items-center gap-3 px-3 py-2" style="border-bottom:1px solid #f0f4ff;font-size:.83rem">
+              <div class="flex-grow-1">
+                <div class="fw-bold">{{ d.analyse.nom }}</div>
+                <div class="text-muted" style="font-size:.75rem">{{ d.cree_le|date:"Y/m/d" }}</div>
+                {% if d.resultat and d.statut == 'prete' %}
+                <div class="mt-1 p-2 rounded" style="background:#f0fdf4;border:1px solid #86efac;font-size:.78rem">
+                  {{ d.resultat|truncatechars:100 }}
+                </div>
+                {% endif %}
+              </div>
+              <span class="st-badge st-{{ d.statut }}">{{ d.get_statut_display }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+<!-- Fichiers médicaux -->
+<div class="section-card">
+  <div class="section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span><i class="fas fa-paperclip me-2 text-primary"></i>الملفات الطبية ({{ pieces_medicales.count }})</span>
+    <div class="d-flex gap-2">
+      <a href="{% url 'medecin_partager_dossier' patient.id %}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
+        <i class="fas fa-share-alt me-1"></i>مشاركة الملف
+      </a>
+      {% if can_upload_files %}
+      <a href="{% url 'medical_file_upload_for_patient' patient.id %}" class="btn btn-sm btn-primary rounded-pill px-3">
+        <i class="fas fa-upload me-1"></i>رفع ملف
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card-body p-0">
+    {% for piece in pieces_medicales %}
+    <div class="d-flex align-items-center justify-content-between gap-3 px-3 py-2" style="border-bottom:1px solid #f0f4ff;font-size:.83rem">
+      <div class="flex-grow-1">
+        <div class="fw-bold">{{ piece.titre }}</div>
+        <div class="text-muted" style="font-size:.75rem">{{ piece.get_type_piece_display }} — {{ piece.cree_le|date:"Y/m/d H:i" }}</div>
+        {% if piece.description %}<div class="mt-1">{{ piece.description|truncatechars:100 }}</div>{% endif %}
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'medical_file_download' piece.id %}" class="btn btn-sm btn-outline-primary">تحميل</a>
+        <form method="post" action="{% url 'medical_file_delete' piece.id %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'medecin_patient_dossier' patient.id %}">
+          <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('حذف هذا الملف؟')">حذف</button>
+        </form>
+      </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-3 text-muted" style="font-size:.83rem">لا توجد ملفات طبية</div>
+    {% endfor %}
+  </div>
+</div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "reception/base_reception.html" %}
+{% block title %}طلب تحليل جديد{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-vial me-2"></i>طلب تحليل جديد</h5></div>
+  <a href="{% url 'reception_factures' %}" class="btn btn-outline-secondary btn-sm">رجوع</a>
+</div>
+
+<div class="card">
+  <div class="card-body">
+
+    <div class="alert alert-info mb-4" style="font-size:.88rem">
+      <i class="fas fa-info-circle me-1"></i>
+      بعد إنشاء الطلب، سيظهر فاتورة غير مدفوعة — بعد الدفع يظهر الطلب للمختبر وللطبيب مباشرة.
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">المريض *</label>
+          <select name="patient" class="form-select" required>
+            <option value="">— اختر مريضاً —</option>
+            {% for p in patients %}
+            <option value="{{ p.id }}">
+              {{ p.utilisateur.first_name }} {{ p.utilisateur.last_name }}
+              {% if p.telephone %} | {{ p.telephone }}{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">الطبيب المعني *</label>
+          <select name="medecin" class="form-select" required>
+            <option value="">— اختر طبيباً —</option>
+            {% for m in medecins %}
+            <option value="{{ m.id }}">{{ m }}{% if m.specialite %} — {{ m.specialite }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-bold">نوع التحليل *</label>
+          <select name="analyse" class="form-select" required onchange="updatePrice(this)">
+            <option value="">— اختر التحليل —</option>
+            {% for a in analyses %}
+            <option value="{{ a.id }}" data-prix="{{ a.prix }}">
+              {{ a.nom }} — {{ a.prix }} MRU
+              {% if a.description %}| {{ a.description }}{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12">
+          <div id="price-preview" style="display:none;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 18px;font-weight:700;color:#166534">
+            <i class="fas fa-coins me-2"></i>مبلغ الفاتورة: <span id="price-val"></span> MRU
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-3">
+        <button type="submit" class="btn btn-primary px-5">
+          <i class="fas fa-plus me-2"></i>إنشاء الطلب والفاتورة
+        </button>
+        <a href="{% url 'reception_factures' %}" class="btn btn-outline-secondary">إلغاء</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+function updatePrice(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const prix = opt.dataset.prix;
+  const preview = document.getElementById('price-preview');
+  const val = document.getElementById('price-val');
+  if (prix) { val.textContent = prix; preview.style.display = 'block'; }
+  else { preview.style.display = 'none'; }
+}
+</script>
+{% endblock %}

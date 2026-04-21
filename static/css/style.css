@@ -1,0 +1,56 @@
+/* ── Variables ── */
+:root {
+  --prime: #1a6fc4;
+  --prime-dark: #0d5aa7;
+  --vert: #17c3b2;
+  --rouge: #e63946;
+  --fond: #f0f4ff;
+  --card-shadow: 0 4px 24px rgba(26,111,196,.10);
+}
+
+/* ── Utilitaires globaux ── */
+* { font-family: 'Cairo', sans-serif; }
+body { background: var(--fond); }
+a { text-decoration: none; }
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.animate-in { animation: fadeInUp .5s ease forwards; }
+
+/* ── Cards améliorées ── */
+.card {
+  border: none;
+  border-radius: 18px;
+  box-shadow: var(--card-shadow);
+  transition: transform .3s, box-shadow .3s;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(26,111,196,.18);
+}
+
+/* ── Boutons ── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--prime), var(--prime-dark));
+  border: none; border-radius: 10px; font-weight: 700; padding: 10px 24px;
+  transition: all .25s;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(26,111,196,.35);
+}
+.btn-vert {
+  background: linear-gradient(135deg, #17c3b2, #0d9e90);
+  border: none; color: #fff; font-weight: 700; border-radius: 10px;
+  padding: 10px 24px; transition: all .25s;
+}
+.btn-vert:hover { transform: translateY(-2px); color:#fff; }
+
+/* ── Badge statuts ── */
+.badge-attente  { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+.badge-confirme { background: #d1e7dd; color: #0f5132; border: 1px solid #28a745; }
+.badge-annule   { background: #f8d7da; color: #842029; border: 1px solid #dc3545; }
+.badge-termine  { background: #e2e3e5; color: #41464b; border: 1px solid #6c757d; }

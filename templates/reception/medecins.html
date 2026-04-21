@@ -1,0 +1,45 @@
+{% extends 'reception/base_reception.html' %}
+{% block title %}الأطباء{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-user-md me-2"></i>الأطباء ({{ medecins.count }})</h5></div>
+  {% if request.user.admin_profil.role == 'admin' %}
+  <a href="{% url 'reception_medecin_ajouter' %}" class="btn btn-primary btn-sm px-3">
+    <i class="fas fa-plus me-1"></i>طبيب جديد
+  </a>
+  {% endif %}
+</div>
+<div class="card"><div class="card-body p-0">
+  <table class="table mb-0">
+    <thead><tr><th>الاسم</th><th>التخصص</th><th>الهاتف</th><th>الخبرة</th><th>الحالة</th>{% if request.user.admin_profil.role == 'admin' %}<th>إجراءات</th>{% endif %}</tr></thead>
+    <tbody>
+      {% for m in medecins %}
+      <tr>
+        <td><strong>{{ m }}</strong>{% if m.email %}<br><small class="text-muted">{{ m.email }}</small>{% endif %}</td>
+        <td>{% if m.specialite %}<span style="background:#e8f0fe;color:#1a6fc4;padding:2px 9px;border-radius:20px;font-size:.75rem;font-weight:700">{{ m.specialite }}</span>{% else %}—{% endif %}</td>
+        <td>{{ m.telephone|default:"—" }}</td>
+        <td>{{ m.annees_experience }} سنة</td>
+        <td>
+          <span style="padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;{% if m.disponible %}background:#d1fae5;color:#065f46{% else %}background:#fee2e2;color:#991b1b{% endif %}">
+            {% if m.disponible %}متاح{% else %}غير متاح{% endif %}
+          </span>
+        </td>
+        {% if request.user.admin_profil.role == 'admin' %}
+        <td class="d-flex gap-1">
+          <a href="{% url 'reception_medecin_modifier' m.pk %}" class="btn btn-sm btn-outline-primary" title="تعديل">
+            <i class="fas fa-edit"></i>
+          </a>
+          <form method="POST" action="{% url 'reception_medecin_toggle' m.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm {% if m.disponible %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+              {% if m.disponible %}تعطيل{% else %}تفعيل{% endif %}
+            </button>
+          </form>
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

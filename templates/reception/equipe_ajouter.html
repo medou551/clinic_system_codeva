@@ -1,0 +1,40 @@
+{% extends 'reception/base_reception.html' %}
+{% block title %}إضافة موظف{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-user-plus me-2"></i>إضافة عضو للفريق</h5></div>
+  <a href="{% url 'reception_equipe' %}" class="btn btn-outline-secondary btn-sm px-3">رجوع</a>
+</div>
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card"><div class="card-body p-4">
+      <div class="alert alert-info mb-3">
+        <i class="fas fa-info-circle me-2"></i>
+        سيدخل بـ<strong>اسمه ورقم هاتفه</strong> عبر صفحة الدخول
+      </div>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-bold" style="font-size:.85rem">الاسم الكامل *</label>
+          <input type="text" name="nom" class="form-control" placeholder="اسم الموظف" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold" style="font-size:.85rem">رقم الهاتف *</label>
+          <input type="text" name="telephone" class="form-control" placeholder="+222 XX XX XX XX" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-bold" style="font-size:.85rem">الدور</label>
+          <select name="role" class="form-select">
+            <option value="reception">استقبال</option>
+            <option value="admin">مدير</option>
+            <option value="medecin">طبيب</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+          <i class="fas fa-save me-2"></i>حفظ
+        </button>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

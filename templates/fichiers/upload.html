@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}رفع ملف طبي{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:850px">
+  <div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4 p-md-5">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+        <div>
+          <h2 class="mb-1">رفع ملف طبي</h2>
+          <p class="text-muted mb-0">المريض: <strong>{{ patient }}</strong></p>
+        </div>
+        {% if user.profil.id == patient.id %}
+        <a href="{% url 'mes_fichiers_medicaux' %}" class="btn btn-outline-secondary rounded-pill px-4">رجوع</a>
+        {% else %}
+        <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill px-4">رجوع</a>
+        {% endif %}
+      </div>
+
+      <form method="post" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-6">
+          <label class="form-label">العنوان</label>
+          <input type="text" name="titre" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">نوع الملف</label>
+          <select name="type_piece" class="form-select">
+            <option value="document">وثيقة طبية</option>
+            <option value="ordonnance">وصفة طبية</option>
+            <option value="analyse">نتيجة تحليل</option>
+            <option value="radiologie">تصوير / أشعة</option>
+            <option value="rapport">تقرير طبي</option>
+            <option value="autre">أخرى</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">الملف</label>
+          <input type="file" name="fichier" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp" required>
+          <div class="form-text">الصيغ المسموحة: PDF / JPG / PNG / WEBP — الحد الأقصى 10MB</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label">ربط بموعد (اختياري)</label>
+          <select name="rendez_vous" class="form-select">
+            <option value="">بدون موعد</option>
+            {% for rdv in rdvs %}
+            <option value="{{ rdv.id }}">{{ rdv.date }} {{ rdv.heure|time:"H:i" }} — {{ rdv.medecin }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">وصف</label>
+          <textarea name="description" rows="4" class="form-control"></textarea>
+        </div>
+        <div class="col-12 d-flex gap-2 justify-content-end">
+          <button type="submit" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-cloud-upload-alt me-1"></i>رفع الملف
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

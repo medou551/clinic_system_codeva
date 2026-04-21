@@ -1,0 +1,42 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}إضافة تخصص{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h5><i class="fas fa-microscope me-2" style="color:#8b5cf6"></i>إضافة تخصص طبي</h5>
+    <div class="sub">التخصصات تساعد المرضى في البحث عن الطبيب المناسب</div>
+  </div>
+  <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="fas fa-arrow-right me-1"></i>رجوع
+  </a>
+</div>
+
+<div class="card" style="max-width:500px;margin:0 auto">
+  <div class="card-header"><i class="fas fa-plus-circle me-2"></i>بيانات التخصص</div>
+  <div class="card-body p-4">
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-bold">اسم التخصص <span class="text-danger">*</span></label>
+        <input type="text" name="nom" class="form-control" placeholder="مثال: طب عام" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">الوصف</label>
+        <textarea name="description" class="form-control" rows="3" placeholder="وصف مختصر للتخصص (اختياري)"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-bold">أيقونة Font Awesome</label>
+        <input type="text" name="icone" class="form-control" value="fa-stethoscope" placeholder="fa-stethoscope">
+        <div class="form-text">مثال: fa-stethoscope، fa-eye، fa-tooth، fa-brain، fa-baby، fa-bone</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-grow-1">
+          <i class="fas fa-plus me-2"></i>إضافة التخصص
+        </button>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary px-4">إلغاء</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

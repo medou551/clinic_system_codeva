@@ -1,0 +1,146 @@
+{% extends 'reception/base_reception.html' %}
+{% load clinic_extras %}
+{% block title %}قائمة الانتظار{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h5><i class="fas fa-hourglass-half me-2"></i>قائمة الانتظار</h5>
+    <div class="sub">إدارة المرضى المنتظرين للحصول على موعد</div>
+  </div>
+  <a href="{% url 'reception_liste_attente_ajouter' %}" class="btn btn-primary btn-sm px-3">
+    <i class="fas fa-user-plus me-1"></i>إضافة للانتظار
+  </a>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="sc blue text-center">
+    <div class="num">{{ stats.total }}</div><div class="lbl">الإجمالي</div>
+  </div></div>
+  <div class="col-6 col-lg-3"><div class="sc orange text-center">
+    <div class="num">{{ stats.attente }}</div><div class="lbl"><i class="fas fa-hourglass me-1"></i>في الانتظار</div>
+  </div></div>
+  <div class="col-6 col-lg-3"><div class="sc green text-center">
+    <div class="num">{{ stats.converti }}</div><div class="lbl"><i class="fas fa-calendar-check me-1"></i>تحول لموعد</div>
+  </div></div>
+  <div class="col-6 col-lg-3"><div class="sc red text-center">
+    <div class="num">{{ stats.annule }}</div><div class="lbl"><i class="fas fa-ban me-1"></i>ملغي</div>
+  </div></div>
+</div>
+
+<!-- Filtres -->
+<div class="card mb-3">
+  <div class="card-body py-2 px-3">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="?statut=en_attente" class="btn btn-sm {% if filtre == 'en_attente' %}btn-primary{% else %}btn-outline-secondary{% endif %}">في الانتظار</a>
+      <a href="?statut=converti"   class="btn btn-sm {% if filtre == 'converti'   %}btn-primary{% else %}btn-outline-secondary{% endif %}">تحول لموعد</a>
+      <a href="?statut=annule"     class="btn btn-sm {% if filtre == 'annule'     %}btn-primary{% else %}btn-outline-secondary{% endif %}">ملغي</a>
+      <a href="?statut="           class="btn btn-sm {% if not filtre %}btn-primary{% else %}btn-outline-secondary{% endif %}">الكل</a>
+    </div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between">
+    <span>النتائج</span>
+    <span style="font-size:.78rem;color:#888">{{ entrees.count }} إدخال</span>
+  </div>
+  <div class="card-body p-0">
+    {% if entrees %}
+    <table class="table mb-0">
+      <thead><tr><th>المريض</th><th>الطبيب</th><th>التاريخ المرغوب</th><th>الحالة</th><th>ملاحظات</th><th>الإجراء</th></tr></thead>
+      <tbody>
+        {% for e in entrees %}
+        <tr>
+          <td><strong>{{ e.patient }}</strong><br><small class="text-muted">{{ e.patient.telephone }}</small></td>
+          <td>{{ e.medecin }}<br><small class="text-muted">{{ e.medecin.specialite }}</small></td>
+          <td><strong>{{ e.date_souhaitee }}</strong><br><small class="text-muted">{{ e.cree_le|date:"Y/m/d H:i" }}</small></td>
+          <td>
+            {% if e.statut == 'en_attente' %}
+              <span class="st-badge st-attente">في الانتظار</span>
+            {% elif e.statut == 'converti' %}
+              <span class="st-badge st-confirme">تحول لموعد</span>
+            {% else %}
+              <span class="st-badge st-annule">ملغي</span>
+            {% endif %}
+          </td>
+          <td class="text-muted" style="font-size:.78rem">{{ e.notes|truncatechars:40|default:"—" }}</td>
+          <td>
+            {% if e.statut == 'en_attente' %}
+            <button class="btn btn-sm btn-success mb-1" data-bs-toggle="modal" data-bs-target="#modalConv{{ e.pk }}">
+              <i class="fas fa-calendar-plus me-1"></i>تحويل
+            </button>
+            <form method="POST" action="{% url 'reception_liste_attente_annuler' e.pk %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('إلغاء هذا الإدخال؟')">
+                <i class="fas fa-times"></i>
+              </button>
+            </form>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+
+        <!-- Modal Convertir -->
+        {% if e.statut == 'en_attente' %}
+        <div class="modal fade" id="modalConv{{ e.pk }}" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content" style="border-radius:16px">
+              <div class="modal-header" style="border-bottom:2px solid #f0f4ff">
+                <h5 class="modal-title fw-bold" style="font-size:.95rem">
+                  <i class="fas fa-calendar-plus me-2 text-primary"></i>تحويل إلى موعد
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <form method="POST" action="{% url 'reception_liste_attente_convertir' e.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                  <p style="font-size:.85rem" class="text-muted mb-3">
+                    المريض: <strong>{{ e.patient }}</strong> — الطبيب: <strong>{{ e.medecin }}</strong>
+                  </p>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold" style="font-size:.83rem">التاريخ *</label>
+                    <input type="date" name="date" class="form-control" value="{{ e.date_souhaitee }}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold" style="font-size:.83rem">الخدمة *</label>
+                    <select name="service" class="form-select" required>
+                      <option value="">-- اختر الخدمة --</option>
+                      {% for ms in e.medecin.services_autorises.all %}
+                        {% if ms.actif %}<option value="{{ ms.service_id }}">{{ ms.service.nom }}</option>{% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold" style="font-size:.83rem">الوقت *</label>
+                    <select name="heure" class="form-select" required>
+                      <option value="">-- اختر الوقت --</option>
+                      {% for h in "08:00,08:30,09:00,09:30,10:00,10:30,11:00,11:30,14:00,14:30,15:00,15:30,16:00,16:30,17:00,17:30"|split:"," %}
+                      <option value="{{ h }}">{{ h }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="modal-footer" style="border-top:2px solid #f0f4ff">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">إلغاء</button>
+                  <button type="submit" class="btn btn-primary btn-sm px-4">
+                    <i class="fas fa-check me-1"></i>إنشاء الموعد
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="fas fa-hourglass-half fa-2x d-block mb-2" style="color:#d1d5db"></i>
+      لا توجد إدخالات في قائمة الانتظار
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

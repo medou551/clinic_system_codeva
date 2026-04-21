@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}لوحة المدير{% endblock %} — العيادة الطبية</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{font-family:'Cairo',sans-serif;box-sizing:border-box}
+    body{background:#f0f4ff;direction:rtl;margin:0}
+
+    /* ── SIDEBAR ── */
+    .sb{position:fixed;right:0;top:0;width:240px;height:100vh;overflow-y:auto;
+        background:linear-gradient(180deg,#1a0a3a 0%,#2d1260 40%,#1a6fc4 100%);
+        z-index:200;display:flex;flex-direction:column}
+    .sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.15);text-align:center}
+    .sb-logo .clinic-ic{font-size:1.8rem;margin-bottom:4px}
+    .sb-logo h4{color:#fff;font-weight:900;font-size:.95rem;margin:0}
+    .sb-logo p{color:rgba(255,255,255,.55);font-size:.7rem;margin:3px 0 0}
+    .sb-logo .admin-badge{background:linear-gradient(135deg,#ffd700,#f59e0b);color:#1a0a3a;
+        font-weight:900;font-size:.65rem;padding:2px 10px;border-radius:20px;display:inline-block;margin-top:6px}
+    .sb-user{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.15);
+             display:flex;align-items:center;gap:9px}
+    .sb-user .av{width:36px;height:36px;border-radius:50%;
+                 background:linear-gradient(135deg,#ffd700,#f59e0b);flex-shrink:0;
+                 display:flex;align-items:center;justify-content:center;font-size:.95rem;color:#1a0a3a}
+    .sb-user .nm{color:#fff;font-size:.82rem;font-weight:700;line-height:1.2}
+    .sb-user .rl{color:#ffd700;font-size:.7rem;margin-top:1px;font-weight:700}
+    .sb-user .lo{padding:2px 8px;font-size:.7rem;border-radius:20px;cursor:pointer;
+                 background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+                 color:#fff;margin-right:auto;text-decoration:none;transition:background .2s}
+    .sb-user .lo:hover{background:rgba(255,255,255,.25);color:#fff}
+    .nb-grp{padding:10px 14px 3px;color:rgba(255,255,255,.4);
+            font-size:.67rem;text-transform:uppercase;letter-spacing:.08em}
+    .nb-item{display:flex;align-items:center;gap:9px;padding:8px 14px;
+             color:rgba(255,255,255,.8);text-decoration:none;font-size:.82rem;
+             font-weight:600;border-right:3px solid transparent;transition:all .2s}
+    .nb-item:hover{background:rgba(255,255,255,.1);color:#fff;text-decoration:none}
+    .nb-item.on{background:rgba(255,215,0,.15);color:#ffd700;border-right-color:#ffd700}
+    .nb-item i{width:16px;text-align:center;flex-shrink:0}
+    .nb-badge{background:rgba(255,215,0,.25);color:#ffd700;border-radius:20px;
+              padding:1px 7px;font-size:.68rem;font-weight:700;margin-right:auto}
+
+    /* ── MAIN ── */
+    .main{margin-right:240px;min-height:100vh;padding:20px}
+
+    /* ── TOPBAR ── */
+    .topbar{background:#fff;border-radius:14px;padding:12px 18px;margin-bottom:18px;
+            display:flex;justify-content:space-between;align-items:center;
+            box-shadow:0 2px 12px rgba(26,111,196,.08)}
+    .topbar h5{font-weight:800;color:#1a0a3a;margin:0;font-size:1rem}
+    .topbar .sub{font-size:.78rem;color:#888;margin-top:1px}
+
+    /* ── STAT CARDS ── */
+    .sc{background:#fff;border-radius:14px;padding:16px 18px;
+        box-shadow:0 2px 12px rgba(26,111,196,.07)}
+    .sc .num{font-size:1.9rem;font-weight:900;line-height:1}
+    .sc .lbl{font-size:.77rem;color:#888;margin-top:3px}
+    .sc.blue   .num{color:#1a6fc4}
+    .sc.green  .num{color:#17c3b2}
+    .sc.orange .num{color:#f59e0b}
+    .sc.red    .num{color:#ef4444}
+    .sc.purple .num{color:#8b5cf6}
+    .sc.gold   .num{color:#d97706}
+
+    /* ── CARD ── */
+    .card{border:none!important;border-radius:14px!important;
+          box-shadow:0 2px 14px rgba(26,111,196,.08)!important}
+    .card-header{background:#fff!important;border-bottom:2px solid #f0f4ff!important;
+                 font-weight:700;font-size:.9rem;padding:12px 16px!important;
+                 color:#1a0a3a;border-radius:14px 14px 0 0!important}
+
+    /* ── TABLE ── */
+    table{font-size:.83rem}
+    thead th{font-size:.73rem;text-transform:uppercase;letter-spacing:.03em;
+             color:#888;font-weight:700;padding:9px 13px;
+             background:#f8faff!important;border-bottom:2px solid #e8f0fe!important}
+    tbody td{padding:9px 13px;vertical-align:middle;border-bottom:1px solid #f4f7ff!important}
+    tbody tr:hover td{background:#f8faff}
+    tbody tr:last-child td{border-bottom:none!important}
+
+    /* ── BADGES ── */
+    .role-admin     {background:#fee2e2;color:#991b1b;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700}
+    .role-reception {background:#dbeafe;color:#1e40af;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700}
+    .role-medecin   {background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700}
+    .role-laboratoire{background:#f3e8ff;color:#6b21a8;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700}
+    .st-actif   {background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700}
+    .st-inactif {background:#fee2e2;color:#991b1b;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700}
+
+    /* ── FORM ── */
+    .form-control,.form-select{border-radius:10px;border:1.5px solid #e2e8f0;
+                                font-size:.88rem;font-family:'Cairo',sans-serif}
+    .form-control:focus,.form-select:focus{border-color:#6b21a8;
+                                            box-shadow:0 0 0 3px rgba(107,33,168,.1)}
+    .btn-primary{background:linear-gradient(135deg,#2d1260,#1a6fc4);
+                 border:none;border-radius:10px;font-weight:700}
+    .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+
+    /* ── ALERTS ── */
+    .alert{border-radius:12px;border:none;font-weight:600;font-size:.88rem}
+    .alert-success{background:#d1fae5;color:#065f46}
+    .alert-danger {background:#fee2e2;color:#991b1b}
+    .alert-info   {background:#dbeafe;color:#1e40af}
+    .alert-warning{background:#fff3cd;color:#856404}
+
+    /* ── TABS ── */
+    .nav-tabs .nav-link{font-weight:700;color:#64748b;border-radius:10px 10px 0 0}
+    .nav-tabs .nav-link.active{color:#2d1260;background:#fff;border-color:#e2e8f0 #e2e8f0 #fff}
+    .tab-content{background:#fff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 14px 14px;padding:20px}
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR ADMIN -->
+<div class="sb">
+  <div class="sb-logo">
+    <div class="clinic-ic">🏥</div>
+    <h4>العيادة الطبية</h4>
+    <p>نظام إدارة العيادة</p>
+    <span class="admin-badge"><i class="fas fa-crown me-1"></i>مدير النظام</span>
+  </div>
+
+  <div class="sb-user">
+    <div class="av"><i class="fas fa-user-shield"></i></div>
+    <div class="flex-grow-1">
+      <div class="nm">{{ request.user.first_name|default:request.user.username }}</div>
+      <div class="rl"><i class="fas fa-crown me-1"></i>مدير</div>
+    </div>
+    <a href="{% url 'deconnexion' %}" class="lo" title="خروج"><i class="fas fa-sign-out-alt"></i></a>
+  </div>
+
+  <nav class="mt-1">
+    <div class="nb-grp">الرئيسية</div>
+    <a href="{% url 'admin_dashboard' %}" class="nb-item {% if request.resolver_match.url_name == 'admin_dashboard' %}on{% endif %}">
+      <i class="fas fa-tachometer-alt"></i>لوحة المدير
+    </a>
+
+    <div class="nb-grp">الموارد البشرية</div>
+    <a href="{% url 'admin_medecin_ajouter' %}" class="nb-item {% if request.resolver_match.url_name == 'admin_medecin_ajouter' %}on{% endif %}">
+      <i class="fas fa-user-md"></i>إضافة طبيب
+    </a>
+    <a href="{% url 'admin_staff_ajouter' %}" class="nb-item {% if request.resolver_match.url_name == 'admin_staff_ajouter' %}on{% endif %}">
+      <i class="fas fa-user-plus"></i>إضافة موظف
+    </a>
+
+    <div class="nb-grp">الخدمات والتحاليل</div>
+    <a href="{% url 'admin_service_ajouter' %}" class="nb-item {% if request.resolver_match.url_name == 'admin_service_ajouter' %}on{% endif %}">
+      <i class="fas fa-briefcase-medical"></i>إضافة خدمة
+    </a>
+    <a href="{% url 'admin_analyse_ajouter' %}" class="nb-item {% if request.resolver_match.url_name == 'admin_analyse_ajouter' %}on{% endif %}">
+      <i class="fas fa-vials"></i>إضافة تحليل
+    </a>
+    <a href="{% url 'admin_specialite_ajouter' %}" class="nb-item {% if request.resolver_match.url_name == 'admin_specialite_ajouter' %}on{% endif %}">
+      <i class="fas fa-microscope"></i>إضافة تخصص
+    </a>
+
+    <div class="nb-grp">الإدارة التشغيلية</div>
+    <a href="{% url 'reception_dashboard' %}" class="nb-item">
+      <i class="fas fa-concierge-bell"></i>لوحة الاستقبال
+    </a>
+    <a href="{% url 'journal_audit' %}" class="nb-item {% if request.resolver_match.url_name == 'journal_audit' %}on{% endif %}">
+      <i class="fas fa-shield-alt"></i>سجل المراقبة
+    </a>
+    <a href="/admin/" class="nb-item">
+      <i class="fas fa-database"></i>Django Admin
+    </a>
+
+    <div class="nb-grp" style="margin-top:auto"></div>
+    <a href="{% url 'accueil' %}" class="nb-item">
+      <i class="fas fa-globe"></i>الموقع الرئيسي
+    </a>
+  </nav>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3">
+      {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block js %}{% endblock %}
+</body>
+</html>

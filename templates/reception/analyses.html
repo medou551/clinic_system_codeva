@@ -1,0 +1,47 @@
+{% extends 'reception/base_reception.html' %}
+{% block title %}إدارة التحاليل{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><h5><i class="fas fa-vials me-2"></i>إدارة قائمة التحاليل ({{ analyses.count }})</h5></div>
+  <a href="{% url 'reception_analyse_ajouter' %}" class="btn btn-primary btn-sm px-3">
+    <i class="fas fa-plus me-1"></i>تحليل جديد
+  </a>
+</div>
+<div class="card"><div class="card-body p-0">
+  {% if analyses %}
+  <table class="table mb-0">
+    <thead><tr><th>اسم التحليل</th><th>الوصف</th><th>السعر</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+    <tbody>
+      {% for a in analyses %}
+      <tr>
+        <td><strong>{{ a.nom }}</strong></td>
+        <td class="text-muted" style="font-size:.8rem">{{ a.description|truncatechars:60|default:"—" }}</td>
+        <td><strong style="color:#1a6fc4">{{ a.prix }} MRU</strong></td>
+        <td>
+          <span style="padding:2px 10px;border-radius:20px;font-size:.73rem;font-weight:700;
+            {% if a.actif %}background:#d1fae5;color:#065f46{% else %}background:#e5e7eb;color:#374151{% endif %}">
+            {% if a.actif %}نشط{% else %}موقوف{% endif %}
+          </span>
+        </td>
+        <td class="d-flex gap-1">
+          <a href="{% url 'reception_analyse_modifier' a.pk %}" class="btn btn-sm btn-outline-primary" title="تعديل">
+            <i class="fas fa-edit"></i>
+          </a>
+          <form method="POST" action="{% url 'reception_analyse_toggle' a.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm {% if a.actif %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="{% if a.actif %}إيقاف{% else %}تفعيل{% endif %}">
+              <i class="fas {% if a.actif %}fa-pause{% else %}fa-play{% endif %}"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="fas fa-vials fa-2x d-block mb-2" style="color:#d1d5db"></i>لا توجد تحاليل مضافة
+  </div>
+  {% endif %}
+</div></div>
+{% endblock %}
